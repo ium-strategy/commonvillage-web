@@ -1,0 +1,8 @@
+# 넷리파이 배포 설정
+#
+# 공개되면 안 되는 것(docs 문서, README, 실행용 파일)은 올리지 않는다.
+# dist 폴더에 넣은 것만 인터넷에 공개된다.
+
+[build]
+  command = "rm -rf dist && mkdir dist && cp -r *.html assets robots.txt dist/"
+  publish = "dist"
