@@ -19,5 +19,3 @@ node_modules/
 _run.log
 _batlog.txt
 
-# 넷리파이 배포용 임시 폴더
-dist/
