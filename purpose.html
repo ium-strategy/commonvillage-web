@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>어떻게 지낼 계획인가요 — 커먼빌리지</title>
+<meta name="description" content="일하며 지내기, 쉬면서 지내기, 정착 전에 살아보기. 목적을 고르면 1분 진단으로 맞는 지역과 신청 가능한 공고를 찾아 드립니다.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+<div class="protobar">프로토타입 화면입니다. 공고·지역 지표는 검증용 예시 데이터이며 실제 모집 정보가 아닙니다.</div>
+<header class="gnb">
+  <div class="gnb-in">
+    <a class="logo" href="index.html">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#E4F0F0"/><path d="M8 17.5 16 10l8 7.5V24a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 8 24z" fill="#167D7F"/><path d="M14 25.5v-5h4v5" fill="#F3C969"/></svg>
+      커먼빌리지
+    </a>
+    <nav aria-label="주 메뉴">
+      <a href="purpose.html" data-match="purpose.html,diagnose.html,result.html,region.html">지역 찾기</a>
+      <a href="programs.html" data-match="programs.html,program.html,alert.html,interest.html">체류지원사업</a>
+      <a href="programs.html?tab=past">지난 모집</a>
+      <a href="for-gov.html">지자체 전용</a>
+    </nav>
+    <a class="btn sm gnb-cta" href="purpose.html">내게 맞는 지역 찾기</a>
+  </div>
+</header>
+
+<main id="main" class="sec">
+  <div class="wrap" style="max-width:720px">
+    <p class="crumb"><a href="index.html">홈</a> · 지역 찾기</p>
+    <h1>어떻게 지낼 계획인가요?</h1>
+    <p class="muted" style="margin-top:10px">고르신 목적에 따라 이어지는 질문이 달라집니다. 여섯 가지만 답하면 끝나고, 회원가입은 없습니다.</p>
+
+    <div class="choices" style="margin-top:26px">
+      <a class="choice" href="diagnose.html?purpose=work">
+        <b>노트북 들고 2주 일하러</b>
+        <span>일은 그대로 하되 있는 곳만 바꾸고 싶어요. 업무 공간과 인터넷, 시내 접근성을 먼저 봅니다.</span>
+      </a>
+      <a class="choice" href="diagnose.html?purpose=rest">
+        <b>쉬면서 한 달</b>
+        <span>일을 잠시 놓고 지내려 해요. 자연과 체류비용, 조용한 정도를 먼저 봅니다.</span>
+      </a>
+      <a class="choice" href="diagnose.html?purpose=settle">
+        <b>이사 전에 세 달 살아보기</b>
+        <span>옮겨 살지 정하기 전에 겪어 보려 해요. 병원·장보기·교통 같은 생활 조건을 먼저 봅니다.</span>
+      </a>
+    </div>
+
+    <div class="note" style="margin-top:26px">
+      진단 없이 공고만 훑어보셔도 됩니다. <a href="programs.html">모집 중인 공고 전체 보기</a>
+    </div>
+
+    <div id="resume" hidden style="margin-top:16px"></div>
+
+    <!-- 재방문 장치 · 진단을 시작하지 않고 나가는 방문자를 위한 마지막 접점 -->
+    <div data-subscribe="foot" style="margin-top:32px"></div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <div>
+      <h4>커먼빌리지</h4>
+      <p>체류지원사업 공고를 모아 신청 자격을 확인해 드립니다.<br>(주)이음전략소</p>
+      <p class="tiny" style="margin-top:10px;color:#8CA2B7">© <span id="year">2026</span> 이음전략소. 공고 정보의 최종 효력은 각 발주기관 원문에 있습니다.</p>
+    </div>
+    <div>
+      <h4>둘러보기</h4>
+      <ul>
+        <li><a href="purpose.html">내게 맞는 지역 찾기</a></li>
+        <li><a href="programs.html">체류지원사업 공고</a></li>
+        <li><a href="programs.html?tab=past">지난 모집</a></li>
+        <li><a href="alert.html">맞춤 공고 알림 받기</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>지자체</h4>
+      <ul>
+        <li><a href="for-gov.html">지자체 전용 안내</a></li>
+        <li><a href="report.html">성과 리포트 샘플</a></li>
+        <li><a href="for-gov.html#subscribe">모집 현황 리포트 구독</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/match.js"></script>
+<script>
+(function () {
+  CV.log('diagnosis_start_view', {});
+  var p = CV.getProfile();
+  if (p && p.purpose) {
+    var box = document.getElementById('resume');
+    box.hidden = false;
+    box.className = 'note gray';
+    box.innerHTML = '지난번에 <strong>' + CV.esc(LABELS.purpose[p.purpose]) + '</strong>(으)로 진단하셨습니다. ' +
+      '<a href="result.html">그 결과 다시 보기</a> · <a href="#" id="reset">처음부터 다시 하기</a>';
+    document.getElementById('reset').addEventListener('click', function (e) {
+      e.preventDefault(); CV.clearProfile(); location.reload();
+    });
+  }
+})();
+</script>
+</body>
+</html>

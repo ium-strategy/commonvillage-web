@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1분 진단 — 커먼빌리지</title>
+<meta name="description" content="여섯 가지 질문에 답하면 맞는 지역 3곳과 지금 신청할 수 있는 공고를 찾아 드립니다. 회원가입 없이 결과까지.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+<div class="protobar">프로토타입 화면입니다. 공고·지역 지표는 검증용 예시 데이터이며 실제 모집 정보가 아닙니다.</div>
+<header class="gnb">
+  <div class="gnb-in">
+    <a class="logo" href="index.html">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#E4F0F0"/><path d="M8 17.5 16 10l8 7.5V24a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 8 24z" fill="#167D7F"/><path d="M14 25.5v-5h4v5" fill="#F3C969"/></svg>
+      커먼빌리지
+    </a>
+    <nav aria-label="주 메뉴">
+      <a href="purpose.html" data-match="purpose.html,diagnose.html,result.html,region.html">지역 찾기</a>
+      <a href="programs.html" data-match="programs.html,program.html,alert.html,interest.html">체류지원사업</a>
+      <a href="programs.html?tab=past">지난 모집</a>
+      <a href="for-gov.html">지자체 전용</a>
+    </nav>
+    <a class="btn sm gnb-cta" href="purpose.html">내게 맞는 지역 찾기</a>
+  </div>
+</header>
+
+<main id="main" class="sec">
+  <div class="wrap" style="max-width:660px">
+    <div class="prog" id="prog" role="progressbar" aria-label="진단 진행" aria-valuemin="1" aria-valuemax="6" aria-valuenow="1"></div>
+    <p class="small muted" id="step-label">1 / 6</p>
+
+    <div id="q" style="margin-top:18px" aria-live="polite"></div>
+
+    <div style="margin-top:24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="btn ghost sm" id="back" type="button">뒤로</button>
+      <button class="btn" id="next" type="button" hidden>다음</button>
+      <span class="small muted" id="hint"></span>
+    </div>
+
+    <p class="tiny muted" style="margin-top:28px">회원가입 없이 결과까지 보실 수 있습니다. 입력하신 답은 이 브라우저에만 저장됩니다.</p>
+  </div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/match.js"></script>
+<script>
+(function () {
+  /* C-02 진단 6단계 (M0 확정안 §5.3)
+     목적 / 기간 / 동행 / 차량·이동 / 우선조건 2개(목적별 분기) / 기초자격
+     한 화면 한 질문. 희망 시기·예산 문항은 넣지 않는다. */
+
+  var answers = { purpose: CV.qs('purpose') || null };
+  var step = answers.purpose ? 1 : 0;
+
+  var PRIORITY_SETS = {
+    work:   ['work', 'transit', 'cost', 'quiet', 'community', 'nature'],
+    rest:   ['nature', 'quiet', 'cost', 'community', 'medical', 'transit'],
+    settle: ['medical', 'school', 'cost', 'community', 'transit', 'quiet']
+  };
+
+  var STEPS = [
+    { key: 'purpose', title: '어떻게 지낼 계획인가요?', help: '고르신 목적에 따라 이어지는 질문이 달라집니다.',
+      opts: [
+        ['work', '노트북 들고 2주 일하러', '일은 그대로, 있는 곳만 바꾸기'],
+        ['rest', '쉬면서 한 달', '일을 잠시 놓고 지내기'],
+        ['settle', '이사 전에 세 달 살아보기', '옮겨 살지 정하기 전에 겪어 보기']
+      ] },
+    { key: 'duration', title: '얼마나 머무실 계획인가요?', help: '지원사업마다 요구하는 기간이 다릅니다. 기간이 맞지 않으면 신청 자체가 안 되는 경우가 많습니다.',
+      opts: [
+        ['1w', '1주', '주말을 낀 짧은 일정'],
+        ['2-4w', '2~4주', '워케이션 공고가 가장 많은 구간'],
+        ['1-3m', '1~3개월', '한 달 살기·살아보기 공고 구간'],
+        ['3m+', '3개월 이상', '정착을 염두에 둔 장기 체류']
+      ] },
+    { key: 'companion', title: '누구와 함께 가시나요?', help: '2인 이상만 받는 공고, 혼자만 받는 공고가 따로 있습니다.',
+      opts: [
+        ['solo', '혼자', ''],
+        ['couple', '둘이', ''],
+        ['family', '아이와 함께', ''],
+        ['friend', '친구·동료와', '']
+      ] },
+    { key: 'mobility', title: '자가용을 쓸 수 있나요?', help: '읍·면 지역 공고는 차량 보유를 요건으로 두는 경우가 있습니다.',
+      opts: [
+        ['car', '자가용 있음', '직접 몰고 가거나 현지에서 빌릴 계획'],
+        ['nocar', '자가용 없음', '대중교통으로 다닐 계획']
+      ] },
+    { key: 'priorities', multi: 2, title: '가장 중요한 두 가지는 무엇인가요?', help: '두 개를 골라 주세요. 지역 추천 점수에 반영됩니다.' },
+    { key: 'basic', title: '마지막입니다. 자격 확인에 필요한 두 가지만요.', help: '' }
+  ];
+
+  var qEl = document.getElementById('q'),
+      progEl = document.getElementById('prog'),
+      labelEl = document.getElementById('step-label'),
+      nextEl = document.getElementById('next'),
+      backEl = document.getElementById('back'),
+      hintEl = document.getElementById('hint');
+
+  function renderProgress() {
+    progEl.innerHTML = STEPS.map(function (_, i) { return '<i class="' + (i <= step ? 'on' : '') + '"></i>'; }).join('');
+    progEl.setAttribute('aria-valuenow', step + 1);
+    labelEl.textContent = (step + 1) + ' / ' + STEPS.length;
+  }
+
+  function render() {
+    renderProgress();
+    var s = STEPS[step];
+    nextEl.hidden = true; hintEl.textContent = '';
+    backEl.textContent = step === 0 ? '홈으로' : '뒤로';
+
+    if (s.key === 'priorities') return renderPriorities(s);
+    if (s.key === 'basic') return renderBasic(s);
+
+    qEl.innerHTML = '<h1 style="font-size:1.5rem">' + CV.esc(s.title) + '</h1>' +
+      (s.help ? '<p class="muted small" style="margin-top:8px">' + CV.esc(s.help) + '</p>' : '') +
+      '<div class="choices' + (s.opts.length > 3 ? ' two' : '') + '" style="margin-top:22px">' +
+        s.opts.map(function (o) {
+          return '<button type="button" class="choice' + (answers[s.key] === o[0] ? ' on' : '') + '" data-v="' + o[0] + '">' +
+            '<b>' + CV.esc(o[1]) + '</b>' + (o[2] ? '<span>' + CV.esc(o[2]) + '</span>' : '') + '</button>';
+        }).join('') +
+      '</div>';
+
+    Array.prototype.forEach.call(qEl.querySelectorAll('.choice'), function (btn) {
+      btn.addEventListener('click', function () {
+        answers[s.key] = btn.getAttribute('data-v');
+        if (s.key === 'purpose') answers.priorities = null;
+        CV.log('diagnosis_step', { step: step + 1, key: s.key, value: answers[s.key] });
+        advance();
+      });
+    });
+  }
+
+  function renderPriorities(s) {
+    var keys = PRIORITY_SETS[answers.purpose] || PRIORITY_SETS.rest;
+    var picked = answers.priorities || [];
+    qEl.innerHTML = '<h1 style="font-size:1.5rem">' + CV.esc(s.title) + '</h1>' +
+      '<p class="muted small" style="margin-top:8px">' + CV.esc(s.help) + '</p>' +
+      '<div class="choices two" style="margin-top:22px">' +
+        keys.map(function (k) {
+          return '<button type="button" class="choice' + (picked.indexOf(k) > -1 ? ' on' : '') + '" data-v="' + k + '" aria-pressed="' + (picked.indexOf(k) > -1) + '">' +
+            '<b>' + CV.esc(LABELS.priority[k]) + '</b></button>';
+        }).join('') +
+      '</div>';
+
+    nextEl.hidden = false;
+    nextEl.disabled = picked.length !== 2;
+    hintEl.textContent = picked.length === 2 ? '' : (2 - picked.length) + '개 더 골라 주세요';
+
+    Array.prototype.forEach.call(qEl.querySelectorAll('.choice'), function (btn) {
+      btn.addEventListener('click', function () {
+        var v = btn.getAttribute('data-v');
+        var cur = (answers.priorities || []).slice();
+        var i = cur.indexOf(v);
+        if (i > -1) cur.splice(i, 1);
+        else if (cur.length < 2) cur.push(v);
+        else { cur.shift(); cur.push(v); }
+        answers.priorities = cur;
+        renderPriorities(s);
+      });
+    });
+    nextEl.onclick = function () {
+      CV.log('diagnosis_step', { step: step + 1, key: 'priorities', value: answers.priorities.join(',') });
+      advance();
+    };
+  }
+
+  function renderBasic(s) {
+    qEl.innerHTML = '<h1 style="font-size:1.5rem">' + CV.esc(s.title) + '</h1>' +
+      '<div class="note" style="margin-top:14px">' +
+        '연령대와 거주 시·도는 <strong>지원사업의 신청 자격을 판정하기 위해서만</strong> 씁니다. ' +
+        '대부분의 공고가 "○○도 외 거주자", "만 19~39세" 같은 조건을 두기 때문입니다. ' +
+        '이름·연락처는 받지 않으며, 지자체에는 개인이 식별되지 않는 집계 형태로만 제공합니다.' +
+      '</div>' +
+      '<div style="margin-top:22px"><label for="age">연령대</label>' +
+        '<select id="age"><option value="">선택해 주세요</option>' +
+        Object.keys(LABELS.age).map(function (k) {
+          return '<option value="' + k + '"' + (answers.ageBand === k ? ' selected' : '') + '>' + LABELS.age[k] + '</option>';
+        }).join('') + '</select></div>' +
+      '<div style="margin-top:16px"><label for="sido">현재 거주하시는 시·도</label>' +
+        '<select id="sido"><option value="">선택해 주세요</option>' +
+        SIDO_LIST.map(function (k) {
+          return '<option value="' + k + '"' + (answers.residenceSido === k ? ' selected' : '') + '>' + k + '</option>';
+        }).join('') + '</select></div>' +
+      '<p class="err" id="basic-err" hidden>두 항목 모두 선택해 주세요.</p>';
+
+    nextEl.hidden = false;
+    nextEl.textContent = '결과 보기';
+    nextEl.disabled = false;
+    nextEl.onclick = function () {
+      var age = document.getElementById('age').value, sido = document.getElementById('sido').value;
+      if (!age || !sido) { document.getElementById('basic-err').hidden = false; return; }
+      answers.ageBand = age; answers.residenceSido = sido;
+      finish();
+    };
+  }
+
+  function advance() {
+    if (step < STEPS.length - 1) { step++; render(); window.scrollTo(0, 0); }
+  }
+
+  backEl.addEventListener('click', function () {
+    if (step === 0) { location.href = 'index.html'; return; }
+    step--; nextEl.textContent = '다음'; render(); window.scrollTo(0, 0);
+  });
+
+  function finish() {
+    var profile = CV.setProfile({
+      purpose: answers.purpose, duration: answers.duration, companion: answers.companion,
+      mobility: answers.mobility, priorities: answers.priorities || [],
+      ageBand: answers.ageBand, residenceSido: answers.residenceSido
+    });
+    CV.rankRegions(profile);
+    CV.log('diagnosis_complete', { purpose: profile.purpose, duration: profile.duration });
+    location.href = 'result.html';
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

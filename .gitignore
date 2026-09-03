@@ -1,0 +1,16 @@
+# 파이썬
+__pycache__/
+*.py[cod]
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 편집기
+.vscode/
+.idea/
+*.swp
+
+# 의존성 (지금은 없지만 나중에 대비)
+node_modules/

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="t">공고 상세 — 커먼빌리지</title>
+<meta name="description" id="d" content="공고 내용을 쉬운 말로 정리하고, 내 조건으로 신청 가능한지 근거와 함께 판정합니다.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+<div class="protobar">프로토타입 화면입니다. 공고·지역 지표는 검증용 예시 데이터이며 실제 모집 정보가 아닙니다.</div>
+<header class="gnb">
+  <div class="gnb-in">
+    <a class="logo" href="index.html">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#E4F0F0"/><path d="M8 17.5 16 10l8 7.5V24a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 8 24z" fill="#167D7F"/><path d="M14 25.5v-5h4v5" fill="#F3C969"/></svg>
+      커먼빌리지
+    </a>
+    <nav aria-label="주 메뉴">
+      <a href="purpose.html" data-match="purpose.html,diagnose.html,result.html,region.html">지역 찾기</a>
+      <a href="programs.html" data-match="programs.html,program.html,alert.html,interest.html">체류지원사업</a>
+      <a href="programs.html?tab=past">지난 모집</a>
+      <a href="for-gov.html">지자체 전용</a>
+    </nav>
+    <a class="btn sm gnb-cta" href="purpose.html">내게 맞는 지역 찾기</a>
+  </div>
+</header>
+
+<main id="main"><div id="root"></div></main>
+
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <div>
+      <h4>커먼빌리지</h4>
+      <p>체류지원사업 공고를 모아 신청 자격을 확인해 드립니다.<br>(주)이음전략소</p>
+      <p class="tiny" style="margin-top:10px;color:#8CA2B7">© <span id="year">2026</span> 이음전략소. 공고 정보의 최종 효력은 각 발주기관 원문에 있습니다.</p>
+    </div>
+    <div>
+      <h4>둘러보기</h4>
+      <ul>
+        <li><a href="purpose.html">내게 맞는 지역 찾기</a></li>
+        <li><a href="programs.html">체류지원사업 공고</a></li>
+        <li><a href="programs.html?tab=past">지난 모집</a></li>
+        <li><a href="alert.html">맞춤 공고 알림 받기</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>지자체</h4>
+      <ul>
+        <li><a href="for-gov.html">지자체 전용 안내</a></li>
+        <li><a href="report.html">성과 리포트 샘플</a></li>
+        <li><a href="for-gov.html#subscribe">모집 현황 리포트 구독</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/match.js"></script>
+<script>
+(function () {
+  var p = CV.program(CV.qs('id'));
+  var root = document.getElementById('root');
+  if (!p) {
+    root.innerHTML = '<div class="wrap sec"><h1>공고를 찾을 수 없습니다</h1>' +
+      '<p class="muted" style="margin-top:10px">마감되어 내려갔을 수 있습니다. <a href="programs.html">공고 목록 보기</a></p></div>';
+    return;
+  }
+
+  var r = CV.region(p.regionId);
+  var profile = CV.getProfile();
+  var open = CV.isOpen(p);
+  var stale = CV.daysSince(p.checkedAt) > 14;
+  var v = profile ? CV.judge(p, profile) : null;
+
+  document.getElementById('t').textContent = p.title + ' — ' + r.sido + ' ' + r.name + ' 체류지원사업 | 커먼빌리지';
+  document.getElementById('d').setAttribute('content',
+    p.title + ' 모집 안내. ' + p.benefit + '. 대상: ' + p.targetSummary + '. 마감 ' + CV.fmtDate(p.closeDate) + '.');
+
+  var VERDICT_COPY = {
+    ok:    { h: '신청하실 수 있습니다', s: '저희가 확인한 조건 기준으로는 걸리는 항목이 없습니다.' },
+    check: { h: '조금 더 확인이 필요합니다', s: '대상이 아니라는 뜻은 아닙니다. 아래 항목을 원문에서 확인해 보세요.' },
+    no:    { h: '이 공고의 대상은 아닙니다', s: '조건 하나가 맞지 않습니다. 다른 공고를 보여 드릴게요.' }
+  };
+
+  function verdictBlock() {
+    if (!profile) {
+      return '<div class="verdict check">' +
+        '<h3>내가 신청할 수 있는지 1분이면 확인됩니다</h3>' +
+        '<p class="small" style="margin-top:8px">여섯 가지만 답하시면 이 공고의 조건을 하나씩 맞춰 보고, 근거와 함께 판정을 보여 드립니다. 회원가입은 없습니다.</p>' +
+        '<p style="margin-top:16px"><a class="btn" href="diagnose.html">내 조건으로 확인하기</a></p>' +
+        '<p class="tiny" style="margin-top:12px">공고가 요구하는 조건: ' +
+          (p.rules || []).map(function (x) { return CV.esc(x.label); }).join(' · ') + '</p>' +
+      '</div>';
+    }
+    var c = VERDICT_COPY[v.state];
+    return '<div class="verdict ' + v.state + '">' +
+      '<p>' + CV.stateBadge(v.state) + '</p>' +
+      '<h3 style="margin-top:10px">' + c.h + '</h3>' +
+      '<p class="small" style="margin-top:6px">' + c.s + '</p>' +
+      '<ul>' + v.reasons.map(function (x) {
+        var ic = x.state === 'ok' ? '✓' : (x.state === 'no' ? '✕' : '!');
+        var col = x.state === 'ok' ? 'var(--green)' : (x.state === 'no' ? '#9A3A2E' : 'var(--amber)');
+        return '<li><span aria-hidden="true" style="color:' + col + ';font-weight:700">' + ic + '</span>' +
+          '<span>' + CV.esc(x.text) + '</span></li>';
+      }).join('') + '</ul>' +
+      '<p class="tiny" style="margin-top:14px">판정 기준: ' + CV.fmtDate(p.checkedAt) + ' 확인한 공고 원문. ' +
+        '최종 자격은 발주기관이 정합니다.</p>' +
+    '</div>';
+  }
+
+  root.innerHTML =
+    '<div class="page-head"><div class="wrap">' +
+      '<p class="crumb"><a href="index.html">홈</a> · <a href="programs.html">체류지원사업</a> · ' +
+        '<a href="region.html?id=' + r.id + '">' + CV.esc(r.name) + '</a></p>' +
+      '<p style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
+        CV.ddayBadge(p) +
+        (p.partner ? '<span class="badge partner">지자체 협력</span>' : '') +
+        (v ? CV.stateBadge(v.state) : '') +
+      '</p>' +
+      '<h1>' + CV.esc(p.title) + '</h1>' +
+      '<p style="margin-top:10px;color:var(--teal-dark);font-weight:600">' + CV.esc(p.benefit) + '</p>' +
+      '<p class="small muted" style="margin-top:8px">' + CV.esc(p.org) + ' · ' + CV.esc(r.sido + ' ' + r.name) + '</p>' +
+    '</div></div>' +
+
+    '<section class="sec"><div class="wrap"><div class="grid g2" style="align-items:start">' +
+
+      '<div>' +
+        verdictBlock() +
+
+        '<div class="card" style="margin-top:18px">' +
+          '<h2 style="font-size:1.15rem">공고를 쉬운 말로 정리하면</h2>' +
+          p.summary.map(function (s) { return '<p style="margin-top:10px">' + CV.esc(s) + '</p>'; }).join('') +
+          '<div class="note gray" style="margin-top:16px">' +
+            '이 요약은 저희가 원문을 읽고 다시 쓴 것입니다. 신청 전에 반드시 원문을 확인하세요. ' +
+            '요약과 원문이 다르면 원문이 맞습니다.' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="card" style="margin-top:18px">' +
+          '<h2 style="font-size:1.15rem">공고가 요구하는 조건</h2>' +
+          '<ul style="margin:12px 0 0;padding-left:1.1em;display:grid;gap:6px">' +
+            (p.rules || []).map(function (x) { return '<li>' + CV.esc(x.label) + '</li>'; }).join('') +
+          '</ul>' +
+          '<p class="small muted" style="margin-top:12px">대상 요약: ' + CV.esc(p.targetSummary) + '</p>' +
+          (p.documents && p.documents.length
+            ? '<h3 style="font-size:1rem;margin-top:18px">준비하실 서류</h3>' +
+              '<ul style="margin:8px 0 0;padding-left:1.1em;display:grid;gap:6px" class="small">' +
+                p.documents.map(function (d) { return '<li>' + CV.esc(d) + '</li>'; }).join('') +
+              '</ul>' +
+              '<p class="tiny muted" style="margin-top:8px">서류는 자격 요건과 별개입니다. 준비만 하시면 되는 항목이라 판정에는 반영하지 않았습니다.</p>'
+            : '') +
+        '</div>' +
+
+        '<div class="note amber" style="margin-top:18px">' +
+          '<strong>면책 안내</strong><br>' +
+          '커먼빌리지의 판정은 공고 원문을 저희가 읽고 규칙으로 옮긴 결과입니다. 참고용이며 최종 자격은 발주기관이 심사해 정합니다. ' +
+          '원문이 수정되었거나 저희가 잘못 읽었을 수 있습니다. ' +
+          '<a href="#report-error" id="report-link">판정이 틀린 것 같으면 알려 주세요</a>' +
+        '</div>' +
+
+        '<div class="card" id="report-error" style="margin-top:18px" hidden>' +
+          '<h3>판정 오류 신고</h3>' +
+          '<p class="small muted" style="margin-top:6px">어떤 부분이 사실과 다른지 적어 주세요. 확인 후 정정하고 확인일을 갱신합니다. 연락처는 받지 않습니다.</p>' +
+          '<textarea id="report-text" rows="3" style="margin-top:12px" placeholder="예: 원문에는 만 45세까지로 되어 있습니다."></textarea>' +
+          '<p style="margin-top:12px"><button class="btn sm" id="report-send" type="button">신고 보내기</button></p>' +
+          '<p class="small" id="report-done" hidden style="margin-top:10px;color:var(--green)">접수했습니다. 확인 후 반영하겠습니다.</p>' +
+        '</div>' +
+      '</div>' +
+
+      '<div>' +
+        '<div class="card">' +
+          '<h2 style="font-size:1.15rem">한눈에</h2>' +
+          '<table class="tbl" style="margin-top:12px;min-width:0"><tbody>' +
+            row('모집 기간', CV.fmtDate(p.openDate) + ' ~ ' + CV.fmtDate(p.closeDate) +
+              (open ? ' <span class="badge dday' + (CV.dday(p.closeDate) <= 7 ? ' soon' : '') + '">D-' + CV.dday(p.closeDate) + '</span>' : '')) +
+            row('체류 기간', p.durationTypes.map(function (d) { return LABELS.duration[d]; }).join(' / ')) +
+            row('혜택', p.benefit) +
+            row('발주기관', p.org) +
+            row('지역', r.sido + ' ' + r.name + ' · <a href="region.html?id=' + r.id + '">지역 조건 보기</a>') +
+            (p.pastResult
+              ? row('지난 모집', p.pastResult.year + ' ' + CV.esc(p.pastResult.round) + ' · ' +
+                  p.pastResult.quota + '명 모집 · 신청 ' + p.pastResult.applicants + '명' +
+                  '<br><span class="tiny muted">출처: ' + CV.esc(p.pastResult.source) + '</span>')
+              : '') +
+            row('확인일', CV.fmtDate(p.checkedAt) +
+              (stale ? ' <span class="badge check"><span class="ic" aria-hidden="true">!</span>14일 경과 — 재확인 예정</span>' : '')) +
+          '</tbody></table>' +
+
+          '<p style="margin-top:18px;display:grid;gap:8px">' +
+            (open
+              ? '<a class="btn" id="apply" href="' + CV.esc(p.sourceUrl) + '" target="_blank" rel="noopener">공고 원문에서 신청하기 ↗</a>' +
+                '<button class="btn ghost" id="interest" type="button">관심 있음으로 표시</button>' +
+                '<a class="btn ghost" href="alert.html?program=' + encodeURIComponent(p.id) + '">이 조건으로 새 공고 알림</a>'
+              : '<a class="btn ghost" href="' + CV.esc(p.sourceUrl) + '" target="_blank" rel="noopener">공고 원문 보기 ↗</a>' +
+                '<a class="btn" href="alert.html?program=' + encodeURIComponent(p.id) + '&type=reopen">다시 열리면 알림 받기</a>') +
+          '</p>' +
+          '<p class="tiny muted" style="margin-top:10px">신청은 발주기관 사이트에서 이뤄집니다. 커먼빌리지는 신청을 대행하지 않습니다.</p>' +
+        '</div>' +
+
+        '<div class="card" style="margin-top:18px">' +
+          '<h3>' + CV.esc(r.name) + '에서 지낸다는 건</h3>' +
+          '<p class="small" style="margin-top:8px">' + CV.esc(r.tagline) + '</p>' +
+          '<div style="margin-top:14px;display:grid;gap:7px">' +
+            METRIC_DEFS.map(function (d) { return CV.metricBar(d, r.metrics[d.key]); }).join('') +
+          '</div>' +
+          '<p style="margin-top:14px"><a class="btn ghost sm" href="region.html?id=' + r.id + '">지역 자세히 보기</a></p>' +
+        '</div>' +
+      '</div>' +
+
+    '</div></div></section>' +
+
+    '<section class="sec alt"><div class="wrap">' +
+      '<div class="sec-head"><h2>같은 지역의 다른 공고</h2></div>' +
+      '<div class="plist" id="related"></div>' +
+      /* 재방문 장치 — 이 공고의 마감 알림과 지역 신규 공고를 함께 걸어 둡니다 */
+      '<div data-subscribe="' + (open ? 'foot' : 'reopen') + '" data-region="' + r.id + '" data-program="' + p.id + '" style="margin-top:24px"' +
+        (open
+          ? ' data-title="이 조건으로 새 공고가 뜨면 알려드릴까요?"' +
+            ' data-lead="' + CV.esc(r.name) + ' 지역에 자격이 되는 공고가 새로 열리거나, 이 사업의 마감이 3일 남으면 알려드려요."'
+          : '') +
+        '></div>' +
+    '</div></section>';
+
+  function row(k, v) {
+    return '<tr><th style="width:7.5em">' + CV.esc(k) + '</th><td>' + v + '</td></tr>';
+  }
+
+  /* 같은 지역 다른 공고 */
+  var related = CV.openPrograms().filter(function (x) { return x.regionId === p.regionId && x.id !== p.id; })
+    .sort(function (a, b) { return CV.dday(a.closeDate) - CV.dday(b.closeDate); }).slice(0, 3);
+  document.getElementById('related').innerHTML = related.length
+    ? related.map(function (x) { return CV.programCard(x, { profile: profile }); }).join('')
+    : '<div class="note">이 지역에 다른 모집 중 공고가 없습니다. <a href="programs.html">전체 공고 보기</a></div>';
+
+  /* 관심 표시 (Interest) — 익명 ID로 저장 (§3.1) */
+  var btn = document.getElementById('interest');
+  if (btn) {
+    if (CV.hasInterest(p.id)) { btn.textContent = '관심 표시함 ✓'; btn.disabled = true; }
+    btn.addEventListener('click', function () {
+      CV.addInterest(p.id, { verdict: v ? v.state : 'unknown', regionId: p.regionId });
+      CV.log('interest_submit', { programId: p.id, verdict: v ? v.state : 'unknown' });
+      location.href = 'interest.html?id=' + encodeURIComponent(p.id);
+    });
+  }
+
+  var apply = document.getElementById('apply');
+  if (apply) {
+    apply.addEventListener('click', function () {
+      CV.addInterest(p.id, { verdict: v ? v.state : 'unknown', regionId: p.regionId, applied: true });
+      CV.log('outbound_apply_click', { programId: p.id, verdict: v ? v.state : 'unknown' });
+      setTimeout(function () { location.href = 'interest.html?id=' + encodeURIComponent(p.id) + '&from=apply'; }, 400);
+    });
+  }
+
+  /* 판정 오류 신고 */
+  document.getElementById('report-link').addEventListener('click', function (e) {
+    e.preventDefault();
+    var box = document.getElementById('report-error');
+    box.hidden = false; box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('report-text').focus();
+  });
+  document.getElementById('report-send').addEventListener('click', function () {
+    var t = document.getElementById('report-text').value.trim();
+    if (!t) return;
+    CV.log('eligibility_error_report', { programId: p.id, text: t.slice(0, 300) });
+    document.getElementById('report-done').hidden = false;
+    document.getElementById('report-text').value = '';
+  });
+
+  CV.mountSubscribes();
+  CV.log('program_view', { programId: p.id, regionId: p.regionId, verdict: v ? v.state : 'none' });
+})();
+</script>
+</body>
+</html>

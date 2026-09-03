@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>체류지원사업 공고 — 한달살기·워케이션·살아보기 모집 | 커먼빌리지</title>
+<meta name="description" content="전국 지자체의 한달살기·워케이션·살아보기 지원사업 공고를 마감임박순으로 모았습니다. 각 공고마다 발주기관 원문과 확인일을 함께 표시합니다.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+<div class="protobar">프로토타입 화면입니다. 공고·지역 지표는 검증용 예시 데이터이며 실제 모집 정보가 아닙니다.</div>
+<header class="gnb">
+  <div class="gnb-in">
+    <a class="logo" href="index.html">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#E4F0F0"/><path d="M8 17.5 16 10l8 7.5V24a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 8 24z" fill="#167D7F"/><path d="M14 25.5v-5h4v5" fill="#F3C969"/></svg>
+      커먼빌리지
+    </a>
+    <nav aria-label="주 메뉴">
+      <a href="purpose.html" data-match="purpose.html,diagnose.html,result.html,region.html">지역 찾기</a>
+      <a href="programs.html" data-match="programs.html,program.html,alert.html,interest.html">체류지원사업</a>
+      <a href="programs.html?tab=past">지난 모집</a>
+      <a href="for-gov.html">지자체 전용</a>
+    </nav>
+    <a class="btn sm gnb-cta" href="purpose.html">내게 맞는 지역 찾기</a>
+  </div>
+</header>
+
+<main id="main">
+  <div class="page-head">
+    <div class="wrap">
+      <p class="crumb"><a href="index.html">홈</a> · 체류지원사업</p>
+      <h1 id="head">체류지원사업 공고</h1>
+      <p class="muted" id="lede" style="margin-top:10px">전국 지자체가 여는 한달살기·워케이션·살아보기 공고입니다. 마감이 가까운 순으로 보여 드립니다.</p>
+    </div>
+  </div>
+
+  <section class="sec">
+    <div class="wrap">
+      <!-- 시즌 캘린더 스트립 (§5.6) -->
+      <div style="margin-bottom:22px">
+        <p class="small muted" style="margin-bottom:8px">월별 마감 예정 공고</p>
+        <div class="season-strip" id="strip"></div>
+      </div>
+
+      <div class="tabs">
+        <a href="programs.html" id="tab-open">모집 중</a>
+        <a href="programs.html?tab=past" id="tab-past">지난 모집</a>
+      </div>
+
+      <!-- 필터 -->
+      <div class="card" style="padding:14px 16px;margin-bottom:20px">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:150px">
+            <label for="f-region">지역</label>
+            <select id="f-region"><option value="">전체</option></select>
+          </div>
+          <div style="flex:1;min-width:150px">
+            <label for="f-duration">체류 기간</label>
+            <select id="f-duration"><option value="">전체</option></select>
+          </div>
+          <div style="flex:1;min-width:150px">
+            <label for="f-sort">정렬</label>
+            <select id="f-sort">
+              <option value="dday">마감임박순</option>
+              <option value="new">신규 등록순</option>
+            </select>
+          </div>
+        </div>
+        <p class="tiny muted" style="margin-top:10px" id="profile-note"></p>
+      </div>
+
+      <!-- 유료 노출 슬롯: 목록 상단 '추천 공고' 최대 2건. 라벨 없는 유료 노출은 하지 않는다 (§5.6) -->
+      <div id="featured-block" hidden style="margin-bottom:24px">
+        <p class="small muted" style="margin-bottom:10px">추천 공고 <span class="tiny">— 해당 지자체와 협력해 상단에 노출한 공고입니다. 판정 기준은 다른 공고와 같습니다.</span></p>
+        <div class="plist" id="featured"></div>
+      </div>
+
+      <div id="past-note" hidden class="note gray" style="margin-bottom:20px">
+        모집이 끝난 공고입니다. 대부분 매년 비슷한 시기에 다시 열립니다.
+        다시 열릴 때 알림을 받아 두시면 마감 전에 알려드립니다.
+      </div>
+
+      <p class="small muted" id="count" style="margin-bottom:12px"></p>
+
+      <!-- 재방문 장치 · 목록 상위 3건 뒤에 끼워 넣습니다 (list-mid) -->
+      <div class="plist" id="list"></div>
+    </div>
+  </section>
+
+  <section class="sec alt">
+    <div class="wrap">
+      <div data-subscribe="foot" id="sub-foot"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <div>
+      <h4>커먼빌리지</h4>
+      <p>체류지원사업 공고를 모아 신청 자격을 확인해 드립니다.<br>(주)이음전략소</p>
+      <p class="tiny" style="margin-top:10px;color:#8CA2B7">© <span id="year">2026</span> 이음전략소. 공고 정보의 최종 효력은 각 발주기관 원문에 있습니다.</p>
+    </div>
+    <div>
+      <h4>둘러보기</h4>
+      <ul>
+        <li><a href="purpose.html">내게 맞는 지역 찾기</a></li>
+        <li><a href="programs.html">체류지원사업 공고</a></li>
+        <li><a href="programs.html?tab=past">지난 모집</a></li>
+        <li><a href="alert.html">맞춤 공고 알림 받기</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>지자체</h4>
+      <ul>
+        <li><a href="for-gov.html">지자체 전용 안내</a></li>
+        <li><a href="report.html">성과 리포트 샘플</a></li>
+        <li><a href="for-gov.html#subscribe">모집 현황 리포트 구독</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/match.js"></script>
+<script>
+(function () {
+  var tab = CV.qs('tab') === 'past' ? 'past' : 'open';
+  var profile = CV.getProfile();
+  var fRegion = document.getElementById('f-region'),
+      fDuration = document.getElementById('f-duration'),
+      fSort = document.getElementById('f-sort');
+
+  REGIONS.forEach(function (r) {
+    fRegion.insertAdjacentHTML('beforeend', '<option value="' + r.id + '">' + CV.esc(r.sido + ' ' + r.name) + '</option>');
+  });
+  Object.keys(LABELS.duration).forEach(function (k) {
+    fDuration.insertAdjacentHTML('beforeend', '<option value="' + k + '">' + LABELS.duration[k] + '</option>');
+  });
+  if (CV.qs('region')) fRegion.value = CV.qs('region');
+
+  /* 탭 상태 */
+  document.getElementById('tab-' + tab).setAttribute('aria-current', 'page');
+  if (tab === 'past') {
+    document.getElementById('head').textContent = '지난 모집';
+    document.getElementById('lede').textContent =
+      '작년·상반기에 열렸던 공고 아카이브입니다. 어떤 지역이 어떤 조건으로 사람을 받았는지 볼 수 있습니다.';
+    document.getElementById('past-note').hidden = false;
+    document.title = '지난 모집 아카이브 — 한달살기·살아보기 지원사업 | 커먼빌리지';
+  }
+
+  /* 시즌 캘린더 스트립: 앞으로 6개월 마감 예정 건수 */
+  (function () {
+    var now = new Date(), html = '';
+    for (var i = 0; i < 6; i++) {
+      var d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      var ym = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
+      var n = CV.openPrograms().filter(function (p) { return p.closeDate.indexOf(ym) === 0; }).length;
+      var season = [1, 2, 3, 7, 8, 9].indexOf(d.getMonth() + 1) > -1;
+      html += '<div class="m' + (i === 0 ? ' now' : '') + '">' +
+        '<span class="tiny muted">' + (d.getMonth() + 1) + '월' + (season ? ' · 시즌' : '') + '</span>' +
+        '<b>' + n + '</b><span class="tiny muted">건 마감</span></div>';
+    }
+    document.getElementById('strip').innerHTML = html;
+  })();
+
+  document.getElementById('profile-note').innerHTML = profile
+    ? '진단하신 조건(' + CV.esc(LABELS.purpose[profile.purpose]) + ' · ' + CV.esc(LABELS.duration[profile.duration]) +
+      ' · ' + CV.esc(profile.residenceSido) + ')으로 각 공고의 판정을 함께 표시하고 있습니다. ' +
+      '<a href="purpose.html">조건 바꾸기</a>'
+    : '<a href="purpose.html">1분 진단</a>을 하시면 공고마다 신청 가능 여부를 함께 표시해 드립니다.';
+
+  function render() {
+    var base = tab === 'past' ? CV.closedPrograms() : CV.openPrograms();
+    var rows = base.filter(function (p) {
+      if (fRegion.value && p.regionId !== fRegion.value) return false;
+      if (fDuration.value && p.durationTypes.indexOf(fDuration.value) < 0) return false;
+      return true;
+    });
+
+    rows.sort(fSort.value === 'new'
+      ? function (a, b) { return a.openDate < b.openDate ? 1 : -1; }
+      : function (a, b) { return CV.dday(a.closeDate) - CV.dday(b.closeDate); });
+
+    var featured = [], list = rows;
+    if (tab === 'open') {
+      featured = rows.filter(function (p) { return p.partner; }).slice(0, 2);
+      list = rows.filter(function (p) { return featured.indexOf(p) < 0; });
+    }
+
+    var fb = document.getElementById('featured-block');
+    fb.hidden = featured.length === 0;
+    document.getElementById('featured').innerHTML =
+      featured.map(function (p) { return CV.programCard(p, { profile: profile }); }).join('');
+
+    document.getElementById('count').textContent = rows.length + '건';
+
+    /* 목록이 길면 3번째 카드 뒤에 구독 블록을 한 번 끼웁니다.
+       끝까지 내려가지 않는 방문자도 재방문 장치를 만나게 하려는 배치입니다. */
+    var cards = list.map(function (p) { return CV.programCard(p, { profile: profile }); });
+    if (cards.length > 4) {
+      cards.splice(3, 0, '<div data-subscribe="mid"' +
+        (fRegion.value ? ' data-region="' + fRegion.value + '"' : '') + '></div>');
+    }
+    document.getElementById('list').innerHTML = cards.length
+      ? cards.join('')
+      : '<div class="note">조건에 맞는 공고가 없습니다. 필터를 바꿔 보시거나 아래에서 알림을 걸어 두세요.</div>';
+    CV.mountSubscribes();
+  }
+
+  [fRegion, fDuration, fSort].forEach(function (el) { el.addEventListener('change', render); });
+  render();
+  CV.log('program_list_view', { tab: tab, region: fRegion.value || 'all' });
+})();
+</script>
+</body>
+</html>

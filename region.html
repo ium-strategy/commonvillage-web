@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="t">지역 상세 — 커먼빌리지</title>
+<meta name="description" id="d" content="생활편의·의료접근·교통·업무환경·자연관광·체류비용 6개 지표를 출처와 기준일과 함께 봅니다.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+<div class="protobar">프로토타입 화면입니다. 공고·지역 지표는 검증용 예시 데이터이며 실제 모집 정보가 아닙니다.</div>
+<header class="gnb">
+  <div class="gnb-in">
+    <a class="logo" href="index.html">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#E4F0F0"/><path d="M8 17.5 16 10l8 7.5V24a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 8 24z" fill="#167D7F"/><path d="M14 25.5v-5h4v5" fill="#F3C969"/></svg>
+      커먼빌리지
+    </a>
+    <nav aria-label="주 메뉴">
+      <a href="purpose.html" data-match="purpose.html,diagnose.html,result.html,region.html">지역 찾기</a>
+      <a href="programs.html" data-match="programs.html,program.html,alert.html,interest.html">체류지원사업</a>
+      <a href="programs.html?tab=past">지난 모집</a>
+      <a href="for-gov.html">지자체 전용</a>
+    </nav>
+    <a class="btn sm gnb-cta" href="purpose.html">내게 맞는 지역 찾기</a>
+  </div>
+</header>
+
+<main id="main"><div id="root"></div></main>
+
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <div>
+      <h4>커먼빌리지</h4>
+      <p>체류지원사업 공고를 모아 신청 자격을 확인해 드립니다.<br>(주)이음전략소</p>
+      <p class="tiny" style="margin-top:10px;color:#8CA2B7">© <span id="year">2026</span> 이음전략소. 공고 정보의 최종 효력은 각 발주기관 원문에 있습니다.</p>
+    </div>
+    <div>
+      <h4>둘러보기</h4>
+      <ul>
+        <li><a href="purpose.html">내게 맞는 지역 찾기</a></li>
+        <li><a href="programs.html">체류지원사업 공고</a></li>
+        <li><a href="programs.html?tab=past">지난 모집</a></li>
+        <li><a href="alert.html">맞춤 공고 알림 받기</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>지자체</h4>
+      <ul>
+        <li><a href="for-gov.html">지자체 전용 안내</a></li>
+        <li><a href="report.html">성과 리포트 샘플</a></li>
+        <li><a href="for-gov.html#subscribe">모집 현황 리포트 구독</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/match.js"></script>
+<script>
+(function () {
+  var r = CV.region(CV.qs('id') || 'gangneung');
+  var root = document.getElementById('root');
+  if (!r) {
+    root.innerHTML = '<div class="wrap sec"><h1>지역을 찾을 수 없습니다</h1>' +
+      '<p class="muted" style="margin-top:10px">주소를 확인해 주세요. <a href="purpose.html">지역 찾기로 가기</a></p></div>';
+    return;
+  }
+
+  document.getElementById('t').textContent = r.sido + ' ' + r.name + ' — 한 달 살기·워케이션 체류 조건 | 커먼빌리지';
+  document.getElementById('d').setAttribute('content',
+    r.sido + ' ' + r.name + ' 체류 조건을 생활편의·의료접근·교통·업무환경·자연관광·체류비용 6개 지표로 정리했습니다. ' + r.tagline);
+
+  var profile = CV.getProfile();
+  var counts = CV.countByState(r.id, profile);
+  var mine = profile ? CV.scoreRegion(r, profile) : null;
+
+  /* 지표 카드 — 출처·기준일 표기 강화 (§5.5, §8 API 대비) */
+  var metricRows = METRIC_DEFS.map(function (d) {
+    var mm = r.metrics[d.key];
+    var has = mm && typeof mm.score === 'number';
+    return '<div style="padding:14px 0;border-top:1px solid var(--line)">' +
+      '<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline">' +
+        '<strong style="color:var(--navy)">' + CV.esc(d.label) + '</strong>' +
+        '<span class="small muted">' + (has ? mm.score + ' / 100' : '데이터 없음') + '</span>' +
+      '</div>' +
+      '<div class="bar" style="margin:8px 0">' + (has ? '<i style="width:' + mm.score + '%"></i>' : '<i class="na"></i>') + '</div>' +
+      '<p class="small">' + CV.esc(has ? mm.value : '아직 확인된 데이터가 없습니다. 확인되는 대로 채웁니다.') + '</p>' +
+      '<p class="tiny muted" style="margin-top:4px">' + CV.esc(d.hint) + '</p>' +
+      '<p class="tiny muted" style="margin-top:6px">' +
+        (mm && mm.source ? '출처: ' + CV.esc(mm.source) + ' · 기준일 ' + CV.fmtDate(mm.asOf) + ' · 갱신 ' + CV.esc(mm.cycle)
+                         : '출처 없음 — 점수 계산에서 제외됩니다.') +
+      '</p>' +
+    '</div>';
+  }).join('');
+
+  var progs = CV.openPrograms().filter(function (p) { return p.regionId === r.id; })
+    .sort(function (a, b) { return CV.dday(a.closeDate) - CV.dday(b.closeDate); });
+  var past = CV.closedPrograms().filter(function (p) { return p.regionId === r.id; });
+
+  root.innerHTML =
+    '<div class="page-head"><div class="wrap">' +
+      '<p class="crumb"><a href="index.html">홈</a> · <a href="purpose.html">지역 찾기</a> · ' + CV.esc(r.sido) + '</p>' +
+      '<h1>' + CV.esc(r.name) + '</h1>' +
+      '<p class="muted" style="margin-top:8px">' + CV.esc(r.tagline) + '</p>' +
+      '<p style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">' +
+        '<span class="badge season">모집 중 공고 ' + progs.length + '건</span>' +
+        (profile ? '<span class="badge ok"><span class="ic" aria-hidden="true">✓</span>내 조건 신청 가능 ' + counts.ok + '건</span>' : '') +
+        (mine ? '<span class="badge check"><span class="ic" aria-hidden="true">·</span>내 적합도 ' + mine.total + '점</span>' : '') +
+      '</p>' +
+    '</div></div>' +
+
+    '<section class="sec"><div class="wrap">' +
+      '<div class="grid g2" style="align-items:start">' +
+        '<div class="card">' +
+          '<h2 style="font-size:1.2rem">여기서 지낸다는 건</h2>' +
+          '<p style="margin-top:12px">' + CV.esc(r.intro) + '</p>' +
+          '<div class="note amber" style="margin-top:16px"><strong>알아 두실 점</strong><br>' + CV.esc(r.caution) + '</div>' +
+          (profile ? '' :
+            '<p style="margin-top:18px"><a class="btn sm" href="purpose.html">내 조건으로 판정받기 · 1분</a></p>') +
+        '</div>' +
+        '<div class="card">' +
+          '<h2 style="font-size:1.2rem">6가지 지표</h2>' +
+          '<p class="small muted" style="margin-top:6px">숫자마다 어디서 왔고 언제 기준인지 함께 적습니다.</p>' +
+          '<div style="margin-top:8px">' + metricRows + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div></section>' +
+
+    '<section class="sec alt"><div class="wrap">' +
+      '<div class="sec-head"><p class="eyebrow">' + CV.esc(r.name) + '</p><h2>모집 중인 체류지원사업 ' + progs.length + '건</h2></div>' +
+      '<div class="plist">' +
+        (progs.length ? progs.map(function (p) { return CV.programCard(p, { profile: profile }); }).join('')
+                      : '<div class="note">지금은 모집 중인 공고가 없습니다. 이 지역에 새 공고가 열리면 알려드릴까요? <a href="alert.html?region=' + r.id + '">알림 받기</a></div>') +
+      '</div>' +
+      (past.length
+        ? '<h3 style="margin:28px 0 12px">지난 모집 ' + past.length + '건</h3><div class="plist">' +
+          past.map(function (p) { return CV.programCard(p, { profile: profile }); }).join('') + '</div>'
+        : '') +
+      /* 재방문 장치 — 이 지역으로 한정해 등록 */
+      '<div data-subscribe="foot" data-region="' + r.id + '" style="margin-top:28px"' +
+        ' data-title="' + CV.esc(r.name) + ' 공고가 열리면 알려드릴까요?"' +
+        ' data-lead="이 지역에 새 체류지원사업이 올라오거나 지난 모집이 다시 열리면 카카오톡이나 이메일로 먼저 알려드려요."></div>' +
+    '</div></section>';
+
+  CV.mountSubscribes();
+  CV.log('region_view', { regionId: r.id });
+})();
+</script>
+</body>
+</html>
