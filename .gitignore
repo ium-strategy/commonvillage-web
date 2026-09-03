@@ -14,3 +14,7 @@ desktop.ini
 
 # 의존성 (지금은 없지만 나중에 대비)
 node_modules/
+
+# 실행 중 생기는 임시 로그
+_run.log
+_batlog.txt
