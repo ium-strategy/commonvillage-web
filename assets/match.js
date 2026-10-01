@@ -33,7 +33,7 @@
         if (!p.duration) return { r: 'unknown', text: '희망 기간을 입력하면 확인할 수 있습니다 — ' + rule.label };
         return rule.allow.indexOf(p.duration) > -1
           ? { r: 'pass', text: rule.label + ' — 희망하신 기간과 맞습니다' }
-          : { r: 'fail', text: rule.label + ' — 희망하신 기간(' + (LABELS.duration[p.duration] || p.duration) + ')과 맞지 않습니다' };
+          : { r: 'unknown', text: rule.label + ' — 희망하신 기간(' + (LABELS.duration[p.duration] || p.duration) + ')과 맞지 않습니다' };
       }
       case 'vehicle': {
         if (!p.mobility) return { r: 'unknown', text: '차량 여부를 입력하면 확인할 수 있습니다 — ' + rule.label };
@@ -63,7 +63,8 @@
     });
     var hasFail = reasons.some(function (x) { return x.state === 'no'; });
     var hasUnknown = reasons.some(function (x) { return x.state === 'check'; });
-    var state = hasFail ? 'no' : (hasUnknown ? 'check' : 'ok');
+    var incomplete = !program.rules || !program.rules.length || (program.documents || []).length > 0;
+    var state = hasFail ? 'no' : (hasUnknown || incomplete ? 'check' : 'ok');
     CV.log('eligibility_check', { programId: program.id, state: state });
     return { state: state, reasons: reasons };
   };

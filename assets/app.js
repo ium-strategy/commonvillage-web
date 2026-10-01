@@ -59,7 +59,7 @@
     var t = today(); t.setHours(0, 0, 0, 0);
     return Math.round((t - parse(d)) / 86400000);
   }
-  function isOpen(p) { return dday(p.closeDate) >= 0; }
+  function isOpen(p) { var t = today(); t.setHours(0,0,0,0); return (!p.openDate || parse(p.openDate) <= t) && dday(p.closeDate) >= 0; }
 
   /* ── 문자열 ── */
   function esc(s) {
@@ -110,9 +110,9 @@
 
   /* ── 배지 ── */
   var STATE = {
-    ok:    { cls: 'ok',    ic: '✓', text: '신청 가능' },
+    ok:    { cls: 'ok',    ic: '✓', text: '확인한 조건 일치' },
     check: { cls: 'check', ic: '!', text: '확인 필요' },
-    no:    { cls: 'no',    ic: '—', text: '대상 아님' }
+    no:    { cls: 'no',    ic: '—', text: '요건 불일치' }
   };
   function stateBadge(state, textOverride) {
     var s = STATE[state] || STATE.check;
@@ -322,18 +322,8 @@
   }
 
   function mountSubscribes() {
-    Array.prototype.forEach.call(document.querySelectorAll('[data-subscribe]'), function (el) {
-      if (el.querySelector('.subcta')) return;   /* 동적 렌더 화면에서 중복 마운트 방지 */
-      var o = {
-        variant: el.getAttribute('data-subscribe') || 'mid',
-        regionId: el.getAttribute('data-region') || null,
-        programId: el.getAttribute('data-program') || null,
-        title: el.getAttribute('data-title') || null,
-        lead: el.getAttribute('data-lead') || null
-      };
-      el.innerHTML = subscribeHTML(o);
-      bindSubscribe(el, o);
-      log('subscribe_block_view', { placement: o.variant });
+    document.querySelectorAll('[data-subscribe]').forEach(function(el) {
+      el.innerHTML = '<div class="note">알림 발송은 준비 중입니다. <a href="alert.html">관심 조건 저장하기</a> (이 브라우저에만 저장)</div>';
     });
   }
 
