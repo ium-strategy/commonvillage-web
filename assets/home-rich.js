@@ -1,0 +1,6 @@
+(function(){
+const root=document.getElementById('home-regions');if(!root)return;
+const esc=CV.esc;const moods={gangneung:'바다 곁의 일상',mokpo:'항구와 골목',yeongdeok:'어촌의 여유',seogwipo:'섬에서의 생활',jecheon:'산과 호수 사이'};
+root.innerHTML=REGIONS.map((r,i)=>{const programs=PROGRAMS.filter(p=>p.regionId===r.id);return '<article class="region-rich"><div class="region-top region-tone-'+i+'"><span>'+esc(r.sido)+'</span><h3>'+esc(r.name)+'</h3><p>'+esc(moods[r.id]||'지역의 일상')+'</p></div><div class="region-body"><p class="region-tagline">'+esc(r.tagline)+'</p><div class="region-metrics">'+['transit','cost','work'].map(key=>{const m=r.metrics[key],d=METRIC_DEFS.find(x=>x.key===key);return '<div><span>'+esc(d.label)+'</span><b>'+esc(m&&m.value||'확인 필요')+'</b></div>';}).join('')+'</div><span class="sample-label">지역 정보·생활 지표 모두 예시</span><div class="region-links"><a href="region.html?id='+esc(r.id)+'">지역 자세히</a><a href="programs.html?tab=past&region='+esc(r.id)+'">연결 공고 '+programs.length+'건</a></div></div></article>';}).join('');
+document.getElementById('home-stats').innerHTML=[['살펴볼 지역',REGIONS.length+'곳'],['공고 아카이브',PROGRAMS.length+'건'],['지금 모집 중',CV.openPrograms().length+'건'],['관심 공고',CV.interests().length+'건']].map(x=>'<div><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('')+'<p>공고·지역 수는 시안에 등록된 예시 기준입니다.</p>';
+})();
