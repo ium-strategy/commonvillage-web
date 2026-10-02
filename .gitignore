@@ -22,3 +22,6 @@ _batlog.txt
 
 # 배포 도구가 만드는 폴더
 .netlify/
+
+# 미리보기 빌드 결과물
+dist/
