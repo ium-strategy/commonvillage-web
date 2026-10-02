@@ -25,3 +25,6 @@ _batlog.txt
 
 # 미리보기 빌드 결과물
 dist/
+
+# 작업 도구 설정
+.claude/

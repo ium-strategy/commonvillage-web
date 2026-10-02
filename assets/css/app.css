@@ -254,3 +254,89 @@ main { min-height: 70vh; }
 .doc th, .doc td { border: 1px solid var(--line); padding: 8px; text-align: left; vertical-align: top; }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--navy); color: var(--white); padding: 12px 18px; border-radius: 12px; font-size: 14px; z-index: 60; }
 .empty { text-align: center; padding: 32px 16px; color: var(--sub); }
+
+/* 지자체 전용 · 성과 리포트 샘플 */
+[hidden] { display: none !important; }
+.gov-hero { background: var(--navy); color: var(--white); }
+.gov-hero .wrap { padding-top: 48px; padding-bottom: 48px; }
+.gov-hero .eyebrow, .gov-sec.navy .eyebrow, .home-gov .eyebrow { color: var(--yellow); font-weight: 700; font-size: 14px; }
+.gov-hero h1 { font-size: 28px; line-height: 1.35; margin-top: 10px; }
+.gov-hero .lead, .gov-sec.navy .lead, .home-gov .lead { margin-top: 14px; color: #C9D6E0; max-width: 40em; font-size: 15.5px; line-height: 1.7; }
+.gov-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.btn-yellow { background: var(--yellow); color: var(--navy); }
+.btn-yellow:hover { background: #EDAE2C; color: var(--navy); }
+.btn-ghost-w { background: transparent; border-color: #8FA6B8; color: var(--white); }
+.btn-ghost-w:hover { border-color: var(--yellow); color: var(--yellow); }
+.btn-sm { min-height: 44px; padding: 0 16px; font-size: 14px; }
+.gov-sec { padding: 40px 0; }
+.gov-sec.alt { background: var(--white); }
+.gov-sec.alt .card { background: var(--cream); }
+.gov-sec.navy { background: var(--navy); color: var(--white); }
+.gov-sec .eyebrow { color: var(--orange-text); font-weight: 700; font-size: 13px; }
+.gov-sec h2 { font-size: 22px; line-height: 1.4; margin-top: 6px; }
+.gov-sec .sec-head { margin-bottom: 18px; }
+.gov-sec .body { margin-top: 14px; font-size: 15.5px; line-height: 1.75; }
+.gov-sec .card h3 { font-size: 17px; }
+.gov-sec .card h3 + p { margin-top: 8px; color: var(--sub); }
+.gov-sec .card p, .gov-sec .card li { font-size: 14.5px; line-height: 1.7; }
+.gov-list { margin: 12px 0 0; padding-left: 18px; display: grid; gap: 8px; }
+.g2, .g3 { display: grid; gap: 14px; }
+.g2 > .card + .card, .g3 > .card + .card { margin-top: 0; }
+.kpi { background: var(--cream); border-radius: var(--radius-m); padding: 16px; }
+.on-cream .kpi { background: var(--white); }
+.kpi b { display: block; font-size: 32px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 14px; font-weight: 600; }
+.kpi p { font-size: 12.5px; color: var(--sub); margin-top: 6px; }
+.kpi.lead, .on-cream .kpi.lead { background: var(--navy); color: var(--white); }
+.kpi.lead p { color: #C9D6E0; }
+.tbl-wrap { overflow-x: auto; border-radius: var(--radius-m); }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14.5px; background: var(--white); }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 12px; text-align: left; vertical-align: top; }
+.tbl thead th { background: var(--navy); color: var(--white); font-weight: 600; }
+.tbl tbody th { color: var(--sub); font-weight: 600; }
+.tbl tbody tr:last-child th, .tbl tbody tr:last-child td { border-bottom: 0; }
+.field { margin-top: 14px; }
+.g2 > .field { margin-top: 0; }
+.field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.field input, .field textarea { width: 100%; border: 1.5px solid var(--chip-line); border-radius: 10px; padding: 12px; font: inherit; color: var(--navy); background: var(--white); }
+.agree { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; margin-top: 14px; }
+.agree input { width: 20px; height: 20px; margin: 2px 0 0; flex: none; }
+.form-err { color: var(--urgent); font-size: 13.5px; margin-top: 10px; }
+.form-err.on-navy { color: #FFB4A6; }
+.inline-form { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.inline-form input { flex: 1 1 220px; min-height: 52px; border: 0; border-radius: 12px; padding: 0 14px; font: inherit; color: var(--navy); }
+.sub-done { margin-top: 16px; color: var(--yellow); font-size: 14.5px; }
+.gov-sec.navy .fine { margin-top: 14px; font-size: 12.5px; color: #A9BBC9; line-height: 1.6; }
+.home-gov { background: var(--navy); color: var(--white); border-radius: var(--radius-l); padding: 28px 20px; }
+.home-gov h2 { font-size: 22px; line-height: 1.4; margin-top: 6px; }
+.sample-bar { background: var(--warn-bg); color: var(--warn); font-size: 13px; text-align: center; padding: 8px 16px; }
+.report-head { background: var(--white); padding: 28px 0; border-bottom: 1px solid var(--line); }
+.report-head h1 { font-size: 24px; line-height: 1.35; margin-top: 8px; }
+.funnel { display: grid; gap: 12px; }
+.funnel .f { display: grid; grid-template-columns: 7.5em 1fr 3.5em; column-gap: 10px; align-items: center; font-size: 14px; }
+.funnel .fb { background: var(--sand); border-radius: 999px; height: 12px; overflow: hidden; }
+.funnel .fb i { display: block; height: 100%; background: var(--orange); border-radius: 999px; }
+.funnel .n { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.funnel .rate { grid-column: 2 / 4; font-size: 12px; color: var(--sub); }
+@media (min-width: 900px) {
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .gov-hero .wrap, .gov-sec .wrap, .report-head .wrap { padding-left: 40px; padding-right: 40px; }
+  .gov-hero .wrap { padding-top: 72px; padding-bottom: 72px; }
+  .gov-hero h1 { font-size: 40px; }
+  .gov-sec { padding: 56px 0; }
+  .gov-sec h2 { font-size: 28px; }
+  .home-gov { padding: 40px; }
+  .home-gov h2 { font-size: 28px; }
+  .report-head h1 { font-size: 30px; }
+}
+@media print {
+  .site-header, .site-footer, .noprint, .toast { display: none !important; }
+  body { background: #fff; }
+  .gov-sec { padding: 16px 0; }
+  .gov-sec.alt { background: #fff; }
+  .card, .kpi, .tbl-wrap, .funnel .f { break-inside: avoid; }
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kpi.lead, .tbl thead th, .funnel .fb, .funnel .fb i, .sample-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

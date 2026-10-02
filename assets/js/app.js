@@ -187,12 +187,12 @@
       '<nav class="nav" aria-label="주요 메뉴">' +
       '<a class="nav-link" href="#/programs"' + (active === "programs" ? ' aria-current="page"' : "") + '>공고 전체</a>' +
       '<a class="nav-link" href="#/regions"' + (active === "regions" ? ' aria-current="page"' : "") + '>지역 정보</a>' +
-      '<a class="nav-link" href="#/for-gov">지자체 안내</a>' +
+      '<a class="nav-link" href="#/for-gov"' + (active === "gov" ? ' aria-current="page"' : "") + '>지자체 안내</a>' +
       (u ? '<a class="nav-login" href="#/my">내 결과</a>' : '<a class="nav-login" href="#" data-action="open-login" data-reason="header">로그인</a>') +
       "</nav></div></header>";
   }
   function footer() {
-    return '<footer class="site-footer"><div class="inner"><nav aria-label="하단 메뉴"><a href="#/programs">공고 전체</a><a href="#/regions">지역 정보</a><a href="#/for-gov">지자체 안내</a><a href="#/privacy">개인정보 처리방침</a></nav>' +
+    return '<footer class="site-footer"><div class="inner"><nav aria-label="하단 메뉴"><a href="#/programs">공고 전체</a><a href="#/regions">지역 정보</a><a href="#/for-gov">지자체 안내</a><a href="#/report">성과 리포트 샘플</a><a href="#/privacy">개인정보 처리방침</a></nav>' +
       "<p>공고 정보는 기관 원문을 기준으로 정리하며 확인일을 함께 표시합니다. 신청 전 반드시 원문을 확인하세요.</p><p>© 커먼빌리지 · 이음전략소</p></div></footer>";
   }
   var keepScroll = false;
@@ -277,7 +277,10 @@
       chipBtn("cond", "nopay", "자부담 0원", c.cond.indexOf("nopay") >= 0) + chipBtn("cond", "nosns", "SNS 과제 없음", c.cond.indexOf("nosns") >= 0) + "</div></div>" +
       '<button type="button" class="btn btn-primary btn-block" style="margin-top:18px" data-action="home-search">조건에 맞는 공고 보기</button></section></div>' +
       '<div class="wrap"><section class="section"><div class="section-head"><h2>마감 임박 공고</h2><a href="#/programs">전체 보기</a></div><div class="program-list grid">' + soon + "</div></section>" +
-      '<section class="section"><div class="section-head"><div><h2>도별 지역 정보</h2><p>장보기·병원·이동까지, 직접 확인한 생활 정보</p></div></div><div class="prov-grid">' + provTiles + "</div></section></div>";
+      '<section class="section"><div class="section-head"><div><h2>도별 지역 정보</h2><p>장보기·병원·이동까지, 직접 확인한 생활 정보</p></div></div><div class="prov-grid">' + provTiles + "</div></section>" +
+      '<section class="section home-gov"><p class="eyebrow">지자체 담당자님께</p><h2>지자체는 오래 머물 사람을 찾고,<br>사람은 나에게 맞는 지역을 찾습니다</h2>' +
+      '<p class="lead">공고를 올리는 데서 끝나지 않고, 지역에 오래 머물 사람을 모집합니다. 노출 수가 아니라 \'적합 수요자 수\'로 성과를 보고합니다.</p>' +
+      '<div class="gov-actions"><a class="btn btn-yellow" href="#/for-gov">지자체 전용 안내 보기</a><a class="btn btn-ghost-w" href="#/report">성과 리포트 샘플 보기</a></div></section></div>';
     render(html, "home");
   }
 
@@ -520,13 +523,152 @@
     render(html, "my");
   }
 
-  /* ---------- 지자체 안내 · 개인정보 ---------- */
+  /* ---------- 지자체 전용 · 성과 리포트 샘플 ---------- */
+  var MAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  function govHead(eyebrow, title) { return '<div class="sec-head"><p class="eyebrow">' + eyebrow + "</p><h2>" + title + "</h2></div>"; }
+  function govCard(title, body) { return '<div class="card"><h3>' + title + "</h3><p>" + body + "</p></div>"; }
+  function kpi(value, label, note, lead) { return '<div class="kpi' + (lead ? " lead" : "") + '"><b>' + value + "</b><span>" + label + "</span><p>" + note + "</p></div>"; }
   function viewForGov() {
-    render('<div class="narrow"><article class="doc"><h1>지자체·공공기관 담당자께</h1><p>홈페이지를 따로 만들지 않아도 커먼빌리지에 모집 공고를 올리고, 조건이 맞는 신청 희망자에게 알리고, 모집 결과를 리포트로 받을 수 있습니다.</p>' +
-      "<h2>무료로 할 수 있는 것</h2><ul><li>모집 공고 등록과 공식 계정 표시</li><li>공고 원문 링크와 확인일 표시</li></ul>" +
-      "<h2>유료 패키지</h2><ul><li>모집·홍보 패키지: 조건이 맞는 회원에게 알림, 상단 노출(\"지자체 협력\" 표시)</li><li>성과 리포트: 공고 조회·신청 클릭·조건 일치 수요자 수</li></ul>" +
-      '<h2>문의</h2><p>' + (CFG.contactEmail ? '<a href="mailto:' + esc(CFG.contactEmail) + '">' + esc(CFG.contactEmail) + "</a>" : "문의처 확정 후 게시") + "</p></article></div>", "gov");
+    var html =
+      '<section class="gov-hero"><div class="wrap"><p class="eyebrow">지자체 담당자 전용</p>' +
+      "<h1>공고를 올리는 데서 끝나지 않고,<br>지역에 오래 머물 사람을 모집합니다</h1>" +
+      '<p class="lead">체류형 지원사업의 공고 게시부터 자격 판정, 모집, 성과 리포트까지 한 번에 맡습니다. 노출 수가 아니라 \'적합 수요자 수\'로 보고합니다.</p>' +
+      '<div class="gov-actions"><a class="btn btn-yellow" href="#/for-gov" data-action="scroll-to" data-target="gov-contact">도입 문의하기</a>' +
+      '<a class="btn btn-ghost-w" href="#/report">성과 리포트 샘플 보기</a></div></div></section>' +
+
+      '<section class="gov-sec"><div class="wrap">' + govHead("이런 상황이 반복되지 않습니까", "공고는 냈는데, 사람이 오지 않습니다") +
+      '<div class="g3">' +
+      govCard("① 공고를 홈페이지에만 올립니다", "시·군 홈페이지 공지사항에 올리고 나면 그다음이 없습니다. 찾아올 사람은 이미 이 사업을 알고 있는 사람뿐입니다.") +
+      govCard("② 신청자가 요건에 안 맞습니다", "거주지·연령·기간 요건을 못 채운 신청서가 섞여 들어옵니다. 걸러내는 데 시간이 들고, 정작 모집 인원은 못 채웁니다.") +
+      govCard("③ 성과를 숫자로 쓰기 어렵습니다", "홍보대행 보고서에는 노출 수와 도달 수가 적혀 있습니다. 정작 필요한 건 \"타 지역에서 몇 명이 왔는가\"입니다.") +
+      "</div></div></section>" +
+
+      '<section class="gov-sec alt"><div class="wrap"><div class="g2" style="align-items:center"><div>' +
+      '<p class="eyebrow">왜 지금인가</p><h2>평가 언어가 \'방문객\'에서 \'머문 사람\'으로 옮겨가고 있습니다</h2>' +
+      '<p class="body">지방소멸대응기금을 비롯한 인구 정책 사업의 성과평가는 얼마나 많이 왔는지보다 <strong>어디에서 온 사람이 얼마나 오래 머물렀는지</strong>를 묻는 쪽으로 바뀌고 있습니다.</p>' +
+      '<p class="body">그러려면 신청 단계에서부터 "타 지역 거주자인가", "체류 기간이 얼마인가"가 데이터로 남아 있어야 합니다. 홍보 채널에는 그 데이터가 남지 않습니다.</p>' +
+      '<p class="small muted" style="margin-top:14px">평가지표 명칭·배점은 연도와 사업별로 다릅니다. 제안 시 해당 사업 지침 기준으로 맞춰 드립니다.</p></div>' +
+      '<div class="card"><h3>커먼빌리지가 남기는 데이터</h3><ul class="gov-list">' +
+      "<li>타 지역 거주 신청자 수 — 인구유입 효과 증빙</li><li>자격 판정을 통과한 적합 수요자 수</li><li>희망 체류 기간 분포(1주 / 2~4주 / 1~3개월 / 3개월+)</li>" +
+      "<li>공고 노출 → 상세 조회 → 자격 판정 → 신청까지의 전환율</li><li>탈락 사유 분포 — 다음 회차 요건 설계에 씁니다</li></ul>" +
+      '<p class="small muted" style="margin-top:14px">개인을 식별할 수 있는 정보는 제공하지 않습니다. 5명 미만 세그먼트는 재식별 방지를 위해 표시하지 않습니다.</p></div></div></div></section>' +
+
+      '<section class="gov-sec"><div class="wrap">' + govHead("하는 일", "게시 → 매칭 → 모집 → 리포트") + '<div class="g2">' +
+      govCard("1. 공고 게시", "보내 주신 공고문을 구조화해 등재합니다. 혜택·기간·요건을 사용자가 알아볼 수 있는 말로 다시 쓰고, 원문 링크와 확인일을 함께 답니다. 협력 지자체 공고는 목록 상단에 \"지자체 협력\" 표시와 함께 노출합니다.") +
+      govCard("2. 자격 매칭", "방문자가 6개 문항에 답하면 공고별로 신청 가능 / 확인 필요 / 대상 아님을 판정합니다. 요건에 맞지 않는 사람이 신청서를 쓰는 일이 줄어듭니다.") +
+      govCard("3. 모집 대행", "조건에 맞는 알림 등록자에게 타깃 발송하고, 시즌 검색 콘텐츠로 유입을 만듭니다. 모집 현황은 주 단위로 공유합니다.") +
+      '<div class="card"><h3>4. 성과 리포트</h3><p>사업 종료 후 전환 깔때기와 지원자 분포를 담은 리포트를 드립니다. PDF로 내려받아 기금 성과 보고에 그대로 첨부하실 수 있습니다.</p>' +
+      '<p style="margin-top:12px"><a class="btn btn-line btn-sm" href="#/report">리포트 샘플 보기</a></p></div>' +
+      "</div></div></section>" +
+
+      '<section class="gov-sec alt"><div class="wrap">' + govHead("무엇이 다른가", "홍보대행과 다른 점") +
+      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:8em"></th><th>기존 홍보대행</th><th>커먼빌리지</th></tr></thead><tbody>' +
+      "<tr><th>파는 것</th><td>노출·도달</td><td>자격 판정을 통과한 적합 수요자</td></tr>" +
+      "<tr><th>첫 보고 지표</th><td>노출 수, 도달 수</td><td>적합 수요자 수, 타 지역 거주 신청자 수</td></tr>" +
+      "<tr><th>사람이 만나는 곳</th><td>SNS 피드·배너</td><td>지원사업을 찾으러 온 사람이 모인 목록</td></tr>" +
+      "<tr><th>요건 불일치</th><td>거르지 않음 — 담당자가 처리</td><td>신청 전 판정으로 사전에 걸러짐</td></tr>" +
+      "<tr><th>남는 데이터</th><td>캠페인 종료와 함께 소멸</td><td>체류 기간·거주지 분포로 다음 회차 설계에 재사용</td></tr>" +
+      "<tr><th>성과 보고</th><td>홍보 실적 보고서</td><td>기금 성과평가 언어에 맞춘 리포트(PDF)</td></tr>" +
+      "</tbody></table></div></div></section>" +
+
+      '<section class="gov-sec"><div class="wrap">' + govHead("받으시는 것", "성과 리포트는 이렇게 생겼습니다") +
+      '<div class="card"><p class="demo-note">아래 숫자는 화면 구성을 보여드리기 위한 예시입니다.</p><div class="g3">' +
+      kpi("184", "적합 수요자 수", "자격 판정 통과", true) + kpi("151", "타 지역 거주 신청자 수", "인구유입 효과 증빙") + kpi("62", "원문 신청 전환", "공고 사이트로 이동") +
+      '</div><p style="margin-top:18px"><a class="btn btn-line btn-sm" href="#/report">전체 리포트 샘플 열기 →</a></p></div>' +
+      '<p class="small muted" style="margin-top:14px">리포트에는 노출 수를 첫 지표로 올리지 않습니다. 노출은 수단이지 성과가 아니기 때문입니다.</p></div></section>' +
+
+      '<section class="gov-sec alt"><div class="wrap">' + govHead("누가 합니까", "(주)이음전략소") + '<div class="g2">' +
+      '<div class="card"><h3>수행 역량</h3><p class="notice-box" style="margin-top:12px"><strong>[작성 필요]</strong> 이 블록에는 실제 수행 실적만 적습니다. 사업명·발주기관·기간·역할·검증 가능한 결과 순으로, 확인되지 않은 수치는 넣지 않습니다.</p>' +
+      '<ul class="gov-list muted"><li>사업명 · 발주기관 · 수행 기간 · 역할</li><li>검증 가능한 결과(계약서·정산서로 확인되는 수치)</li><li>기관 로고는 사용 동의를 받은 것만 게시</li></ul></div>' +
+      '<div class="card"><h3>계약 방식</h3><ul class="gov-list">' +
+      "<li><strong>무료</strong> — 모집 공고 등록과 공식 계정 표시, 공고 원문 링크와 확인일 표시</li>" +
+      "<li><strong>공고 등재·상단 노출</strong> — 모집 기간 동안 목록 상단 고정, \"지자체 협력\" 표시</li>" +
+      "<li><strong>타깃 알림 발송</strong> — 조건에 맞는 알림 등록자에게 발송</li>" +
+      "<li><strong>모집 대행</strong> — 시즌 콘텐츠·유입 관리 포함</li>" +
+      "<li><strong>성과 리포트</strong> — 사업 종료 후 2주 내 발행, PDF 제공</li></ul>" +
+      '<p class="disclaimer" style="background:var(--white)">단가와 판매 정책은 확정 전입니다. 사업 규모와 모집 목표에 따라 협의합니다.</p>' +
+      '<p class="small muted" style="margin-top:12px">제안은 예산 확정기(1~2월)와 추경기(6~7월)에 맞춰 드립니다. 공고 시즌 직전에 계약하시면 모집 기간을 온전히 씁니다.</p></div>' +
+      "</div></div></section>" +
+
+      '<section class="gov-sec" id="gov-contact"><div class="narrow">' + govHead("도입 문의", "담당자님 사업에 맞춰 검토해 드립니다") +
+      '<div class="card"><form id="gov-contact-form" novalidate><div class="g2">' +
+      '<div class="field"><label for="c-org">기관명</label><input type="text" id="c-org" name="org" placeholder="○○군 인구정책과" autocomplete="organization"></div>' +
+      '<div class="field"><label for="c-name">담당자 성함</label><input type="text" id="c-name" name="name" autocomplete="name"></div></div>' +
+      '<div class="field"><label for="c-email">회신받으실 메일</label><input type="email" id="c-email" name="email" placeholder="name@korea.kr" autocomplete="email"></div>' +
+      '<div class="field"><label for="c-msg">검토 중인 사업 내용 <span class="muted" style="font-weight:400">(선택)</span></label><textarea id="c-msg" name="msg" rows="3" placeholder="예: 2027년 상반기 한달살기 사업, 모집 30명 목표"></textarea></div>' +
+      '<label class="agree" for="c-agree"><input type="checkbox" id="c-agree" name="agree"><span>문의 회신 목적으로 입력하신 정보를 이용하는 데 동의합니다. (필수)</span></label>' +
+      '<p class="form-err" id="gov-contact-err" role="alert" hidden></p>' +
+      '<p style="margin-top:18px"><button class="btn btn-primary" type="submit">문의 보내기</button></p></form>' +
+      '<div id="gov-contact-done" role="status" hidden></div></div></div></section>' +
+
+      '<section class="gov-sec navy" id="gov-subscribe"><div class="narrow"><p class="eyebrow">월 1회 발송</p><h2>「전국 체류형 지원사업 모집 현황 리포트」</h2>' +
+      '<p class="lead">전국 지자체가 그달에 연 체류지원사업 공고를 모아, 어떤 조건으로 몇 명을 모집했는지 정리해 보내드립니다. 다른 지역이 무엇을 얼마에 하고 있는지 한 장으로 보실 수 있습니다.</p>' +
+      '<form id="gov-sub-form" class="inline-form" novalidate><input type="email" name="email" placeholder="업무용 메일 주소" aria-label="구독 이메일" autocomplete="email">' +
+      '<button class="btn btn-yellow" type="submit">구독 신청</button></form>' +
+      '<p class="form-err on-navy" id="gov-sub-err" role="alert" hidden>메일 주소를 확인해 주세요.</p>' +
+      '<p class="sub-done" id="gov-sub-done" role="status" hidden></p>' +
+      '<p class="fine">월 1회만 발송합니다. 영업 목적의 개별 연락은 동의하신 경우에만 드립니다. 모든 메일 하단에 수신거부 링크가 있으며, 한 번 누르면 즉시 해지됩니다.</p></div></section>';
+    render(html, "gov");
+    track("gov_view", {});
   }
+
+  var REPORT_FUNNEL = [["공고 노출", 2940], ["상세 조회", 806], ["자격 판정 실행", 241], ["적합 판정", 184], ["관심·알림 등록", 97], ["참여의향 응답", 74], ["원문 신청", 62]];
+  var REPORT_BY_REGION = [["서울특별시", 61], ["경기도", 54], ["부산광역시", 14], ["인천광역시", 12], ["대전광역시", 10], ["강원특별자치도", 33], ["그 밖의 지역", 3]];
+  var REPORT_BY_DURATION = [["1주", 22], ["2~4주", 118], ["1~3개월", 41], ["3개월 이상", 3]];
+  /* 분포표: 5명 미만은 재식별 방지를 위해 숫자를 감춘다 */
+  function distRows(rows, total) {
+    return rows.map(function (r) {
+      return '<tr><th style="width:9em">' + r[0] + "</th><td>" + (r[1] < 5 ? '<span class="muted">5명 미만</span>' : r[1] + "명 · " + Math.round(r[1] / total * 100) + "%") + "</td></tr>";
+    }).join("");
+  }
+  function viewReport() {
+    var max = REPORT_FUNNEL[0][1];
+    var funnel = REPORT_FUNNEL.map(function (s, i) {
+      var prev = i ? REPORT_FUNNEL[i - 1][1] : null;
+      return '<div class="f"><span>' + s[0] + '</span><span class="fb"><i style="width:' + Math.max(2, s[1] / max * 100) + '%"></i></span><span class="n">' + s[1].toLocaleString() + "</span>" +
+        (prev ? '<span class="rate">직전 단계 대비 ' + Math.round(s[1] / prev * 100) + "%</span>" : "") + "</div>";
+    }).join("");
+    var pdfBtn = function (cls) { return '<button type="button" class="btn ' + cls + ' noprint" data-action="print-report">보고서 내려받기 (PDF)</button>'; };
+    var html =
+      '<p class="sample-bar">샘플 리포트입니다. 아래 수치는 화면 구성을 보여드리기 위한 예시이며 실제 사업 결과가 아닙니다.</p>' +
+      '<section class="report-head"><div class="wrap"><p class="small muted">비공개 링크 · 로그인 없이 열람 · 링크를 아는 분만 보실 수 있습니다</p>' +
+      "<h1>강릉 워케이션 체류지원 2기 — 성과 리포트</h1>" +
+      '<p class="small muted" style="margin-top:10px">발주기관 강릉시 · 모집 기간 2026.08.18 ~ 2026.09.08 · 리포트 발행일 2026.09.22 · 작성 (주)이음전략소</p>' +
+      '<p style="margin-top:14px">' + pdfBtn("btn-primary btn-sm") + "</p></div></section>" +
+
+      '<section class="gov-sec"><div class="wrap">' + govHead("한 줄 요약", "자격 요건을 통과한 적합 수요자 184명을 모았고, 그중 62명이 신청까지 진행했습니다") +
+      '<div class="g3 on-cream">' + kpi("184", "적합 수요자 수", "공고 요건을 모두 충족한다고 판정된 방문자 수", true) +
+      kpi("151", "타 지역 거주 신청자 수", "강원 외 지역 거주자 — 인구유입 효과 증빙 지표") + kpi("62", "원문 신청 전환 수", "공고 사이트 신청 페이지로 이동한 건수") +
+      kpi("38", "마감 알림 등록 수", "다음 회차 모집에 바로 쓸 수 있는 대기 수요") + kpi("21일", "모집 노출 기간", "목록 상단 고정 노출 유지 기간") +
+      kpi("2,940", "공고 노출 수", "참고 지표 — 성과 판단의 기준으로 쓰지 않습니다") + "</div></div></section>" +
+
+      '<section class="gov-sec alt"><div class="wrap">' + govHead("전환 깔때기", "노출에서 신청까지 어디서 줄었는가") +
+      '<div class="card"><div class="funnel">' + funnel + "</div>" +
+      '<p class="small muted" style="margin-top:18px">상세 조회에서 자격 판정으로 넘어가는 구간의 이탈이 가장 큽니다. 다음 회차에서는 공고 카드에 대상 요건을 한 줄 더 노출해 판정 진입률을 높일 것을 제안드립니다.</p></div>' +
+      '<p class="small muted" style="margin-top:14px">체류 확인(실제 방문·숙박 여부)은 지자체가 보유한 정산 자료와 대조해야 확정됩니다. 원하시면 다음 리포트에 합산해 드립니다.</p></div></section>' +
+
+      '<section class="gov-sec"><div class="wrap">' + govHead("지원자 분포", "어떤 사람이 왔는가") + '<div class="g2">' +
+      '<div class="card"><h3>거주 지역 (판정 통과자 184명 기준)</h3><div class="tbl-wrap" style="margin-top:12px"><table class="tbl"><tbody>' + distRows(REPORT_BY_REGION, 184) + "</tbody></table></div></div>" +
+      '<div class="card"><h3>희망 체류 기간</h3><div class="tbl-wrap" style="margin-top:12px"><table class="tbl"><tbody>' + distRows(REPORT_BY_DURATION, 184) + "</tbody></table></div></div></div>" +
+      '<p class="disclaimer"><strong>재식별 방지 원칙</strong> — 인원이 5명 미만인 항목은 숫자를 표시하지 않고 \'5명 미만\'으로 묶습니다. 개인을 식별할 수 있는 정보는 어떤 형태로도 제공하지 않습니다.</p></div></section>' +
+
+      '<section class="gov-sec alt"><div class="wrap">' + govHead("다음 회차 설계에 쓰실 것", "대상이 아니라고 판정된 이유") +
+      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>사유</th><th style="width:6em">인원</th><th>검토 제안</th></tr></thead><tbody>' +
+      "<tr><td>희망 기간이 2~4주와 맞지 않음</td><td>73</td><td>1주 단위 회차를 병행하면 수요를 더 받습니다</td></tr>" +
+      "<tr><td>강원 거주자</td><td>41</td><td>요건상 불가피 — 도내 대상 별도 사업 검토</td></tr>" +
+      "<tr><td>재직·프리랜서 증빙 어려움</td><td>18</td><td>증빙 범위를 공고문에 예시로 명시하면 이탈이 줄어듭니다</td></tr>" +
+      "<tr><td>기타</td><td>5명 미만</td><td>—</td></tr></tbody></table></div></div></section>" +
+
+      '<section class="gov-sec"><div class="wrap">' + govHead("성과 보고용", "기금 성과평가에 그대로 쓰실 수 있는 문장") +
+      '<div class="card"><p style="font-size:15.5px;line-height:1.8">「강릉 워케이션 체류지원 2기」 모집 결과, 자격 요건을 충족한 <strong>적합 수요자 184명</strong>을 확보하였으며, 이 가운데 <strong>타 지역(강원 외) 거주자는 151명</strong>으로 전체의 82.1%를 차지함. 최종 신청 전환은 62건이며, 차기 회차 모집을 위한 <strong>사전 수요자 38명</strong>이 알림 등록 상태로 확보됨.</p>' +
+      '<p class="small muted" style="margin-top:14px">지표 명칭은 해당 사업의 성과평가 지침 용어에 맞춰 조정해 드립니다. 위 수치는 커먼빌리지 로그 기준이며, 최종 선정·체류 실적은 발주기관 정산 자료를 따릅니다.</p></div>' +
+      '<div class="gov-actions noprint">' + pdfBtn("btn-primary") + '<a class="btn btn-line" href="#/for-gov">지자체 전용 안내로 돌아가기</a></div>' +
+      '<p class="small muted" style="margin-top:20px">커먼빌리지 성과 리포트 · (주)이음전략소 · 이 링크는 검색에 노출되지 않습니다. 재배포 시 담당자께 알려 주세요.</p></div></section>';
+    render(html, "gov");
+    track("report_view", {});
+  }
+
+  /* ---------- 개인정보 ---------- */
   function viewPrivacy() {
     render('<div class="narrow"><article class="doc"><h1>개인정보 처리방침</h1><p class="demo-note">초안입니다. 법무 검토 후 확정하며, 확정 전까지 실제 개인정보를 수집하지 않습니다.</p>' +
       "<h2>1. 수집하는 항목과 목적</h2><table><tr><th>구분</th><th>항목</th><th>목적</th></tr>" +
@@ -641,6 +783,12 @@
       case "alert":
         var u2 = getUser(); u2.alerts[v] = !u2.alerts[v]; store.set("user", u2); refresh(viewMy); break;
       case "logout": logout(); break;
+      case "scroll-to":
+        var target = document.getElementById(el.getAttribute("data-target"));
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        break;
+      case "print-report":
+        track("report_download", {}); window.print(); break;
       case "withdraw":
         if (el.getAttribute("data-confirm") !== "1") {
           el.setAttribute("data-confirm", "1"); el.textContent = "한 번 더 누르면 탈퇴돼요 (저장된 결과·알림 설정 삭제)"; el.style.color = "var(--urgent)";
@@ -651,6 +799,38 @@
     }
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeLogin(); });
+
+  /* 지자체 전용 화면의 문의·구독 양식. 발송 연결 전에는 전송되지 않았음을 그대로 알린다. */
+  document.addEventListener("submit", function (e) {
+    var f = e.target;
+    if (f.id !== "gov-contact-form" && f.id !== "gov-sub-form") return;
+    e.preventDefault();
+    var email = f.elements.email.value.trim();
+    if (f.id === "gov-sub-form") {
+      var subErr = document.getElementById("gov-sub-err");
+      if (!MAIL_OK.test(email)) { subErr.hidden = false; return; }
+      subErr.hidden = true;
+      track("subscribe_report", { mode: "demo" });
+      var subDone = document.getElementById("gov-sub-done");
+      subDone.textContent = "미리보기 화면이라 구독 신청이 저장되지 않았습니다. 이메일 발송 서비스를 연결한 뒤에 열립니다.";
+      f.hidden = true; subDone.hidden = false;
+      return;
+    }
+    var org = f.elements.org.value.trim(), err = document.getElementById("gov-contact-err");
+    if (!org || !MAIL_OK.test(email)) { err.textContent = "기관명과 메일 주소를 확인해 주세요."; err.hidden = false; return; }
+    if (!f.elements.agree.checked) { err.textContent = "문의 회신을 위한 정보 이용에 동의해 주세요."; err.hidden = false; return; }
+    var done = document.getElementById("gov-contact-done");
+    if (CFG.contactEmail) {
+      var body = "기관명: " + org + "\n담당자: " + f.elements.name.value.trim() + "\n회신 메일: " + email + "\n\n" + f.elements.msg.value.trim();
+      location.href = "mailto:" + CFG.contactEmail + "?subject=" + encodeURIComponent("[도입 문의] " + org) + "&body=" + encodeURIComponent(body);
+      done.innerHTML = "<h3>메일 프로그램에서 보내기를 눌러 주세요</h3><p class=\"small muted\" style=\"margin-top:8px\">작성하신 내용을 메일로 옮겼습니다. 메일 프로그램이 열리지 않으면 " + esc(CFG.contactEmail) + " 로 보내 주세요.</p>";
+      track("b2g_contact", { mode: "mailto" });
+    } else {
+      done.innerHTML = "<h3>미리보기 화면이라 문의가 전송되지 않았습니다</h3><p class=\"small muted\" style=\"margin-top:8px\">운영 문의 메일이 확정되면 이 양식이 연결됩니다. 입력하신 내용은 어디에도 저장되지 않았습니다.</p>";
+      track("b2g_contact", { mode: "demo" });
+    }
+    f.hidden = true; done.hidden = false;
+  });
 
   /* ---------- 라우터 ---------- */
   function route() {
@@ -667,6 +847,7 @@
     if (seg[0] === "regions") return viewRegions(decodeURIComponent(seg[1] || ""));
     if (seg[0] === "my") return viewMy();
     if (seg[0] === "for-gov") return viewForGov();
+    if (seg[0] === "report") return viewReport();
     if (seg[0] === "privacy") return viewPrivacy();
     viewHome();
   }

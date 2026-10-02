@@ -3,7 +3,7 @@
 웹기획안 v3.0과 확정 시안을 구현한 정적 사이트입니다. GitHub Pages에 그대로 올릴 수 있습니다.
 
 ## 구성
-- index.html — 진입 파일 (화면은 주소의 # 경로로 바뀜: #/ 홈, #/diagnose/1~6 진단, #/result 결과, #/programs 공고, #/program/<id> 상세, #/regions/<도> 지역 정보, #/my 내 결과·알림, #/privacy 처리방침, #/for-gov 지자체 안내)
+- index.html — 진입 파일 (화면은 주소의 # 경로로 바뀜: #/ 홈, #/diagnose/1~6 진단, #/result 결과, #/programs 공고, #/program/<id> 상세, #/regions/<도> 지역 정보, #/my 내 결과·알림, #/privacy 처리방침, #/for-gov 지자체 전용 안내, #/report 성과 리포트 샘플)
 - assets/css/app.css — 스타일
 - assets/js/config.js — 로그인 방식 설정 (지금은 demo: 이 기기에만 임시 로그인)
 - assets/js/app.js — 진단·판정·추천·필터·로그인·알림 설정 동작
