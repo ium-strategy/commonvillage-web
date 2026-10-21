@@ -340,3 +340,95 @@ main { min-height: 70vh; }
   .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .kpi.lead, .tbl thead th, .funnel .fb, .funnel .fb i, .sample-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* 청년 기회 홈 · 기존 지역살이 화면과 독립된 레이아웃 */
+.village-hero { background: var(--navy); color: white; }
+.village-hero-inner { display:grid; gap:32px; padding-top:44px; padding-bottom:64px; }
+.eyebrow { font-size:13px; font-weight:700; letter-spacing:.02em; color:var(--orange-text); }
+.village-hero .eyebrow, .village-letter .eyebrow { color:var(--yellow); }
+.village-hero h1 { font-size:34px; line-height:1.35; margin-top:16px; letter-spacing:-.045em; }
+.village-hero h1 em { font-style:normal; color:var(--yellow); }
+.hero-description { color:#D7E1E8; margin-top:20px; line-height:1.8; }
+.hero-editorial { display:none; border:1px solid #668297; border-radius:20px; padding:32px; background:#254B66; position:relative; }
+.hero-editorial:after { content:""; position:absolute; width:54px; height:54px; border-radius:50%; background:var(--orange); right:26px; top:24px; }
+.editorial-label { letter-spacing:.16em; color:#D7E1E8; font-size:12px; }
+.hero-editorial p { font-size:29px; font-weight:600; line-height:1.5; margin:46px 0 24px; }
+.editorial-steps { display:flex; gap:12px; align-items:center; }
+.editorial-steps span { border:1px solid #91A8B8; border-radius:100px; padding:8px 14px; font-size:14px; }
+.editorial-steps i { font-style:normal; color:var(--yellow); }
+.editorial-caption { display:block; margin-top:32px; font-size:12px; color:#C9D6E0; }
+.pillar-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:-24px; position:relative; }
+.pillar { background:var(--white); padding:20px 16px; border:1px solid var(--line); border-radius:16px; text-decoration:none; box-shadow:0 4px 12px #1D405B08; transition:transform .15s; }
+.pillar:hover { transform:translateY(-3px); border-color:var(--orange); }
+.pillar-icon { display:grid; place-items:center; width:36px; height:36px; background:var(--orange-tint); border-radius:10px; color:var(--orange-text); font-size:25px; }
+.pillar-hint { display:block; color:var(--sub); font-size:11px; margin-top:18px; }
+.pillar h2 { font-size:19px; margin:5px 0 8px; display:flex; justify-content:space-between; gap:4px; }
+.pillar h2 span { color:var(--orange-text); }
+.pillar p { font-size:12px; color:var(--sub); }
+.village-section { margin-top:48px; }
+.village-section .section-head h2 { margin-top:6px; font-size:23px; }
+.weekly-empty { display:flex; gap:20px; align-items:center; border:1px solid var(--line); border-radius:16px; background:var(--white); padding:28px 20px; }
+.weekly-mark { font-size:36px; color:var(--orange-text); }
+.weekly-empty h3 { font-size:18px; }
+.weekly-empty p { color:var(--sub); font-size:14px; margin-top:6px; }
+.weekly-empty a { display:inline-block; margin-top:14px; font-size:14px; }
+.village-letter { background:var(--navy); color:white; border-radius:20px; padding:28px 22px; display:grid; gap:24px; }
+.village-letter h2 { font-size:28px; line-height:1.35; margin:10px 0 16px; }
+.village-letter p:not(.eyebrow) { color:#D7E1E8; font-size:14px; line-height:1.8; }
+.letter-actions { display:flex; flex-direction:column; align-items:flex-start; gap:14px; justify-content:center; }
+.letter-actions a:not(.btn) { color:white; font-size:14px; }
+.letter-actions .small { color:#D7E1E8; }
+.channel-pending { display:inline-block; border:1px solid currentColor; border-radius:10px; padding:12px 16px; font-size:14px; font-weight:500; }
+.action-card { display:block; text-decoration:none; border:1px solid var(--line); }
+.action-grid > .card + .card { margin-top:0; }
+.action-number { display:block; color:var(--orange-text); font-size:13px; font-weight:700; margin-bottom:18px; }
+.action-card h3 { font-size:21px; }
+.action-card p { color:var(--sub); font-size:14px; margin-top:10px; }
+.action-card b { display:block; font-size:14px; margin-top:24px; }
+.living-feature { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:22px; padding:26px 22px; border:1px solid var(--chip-line); border-radius:16px; }
+.living-feature h2 { font-size:21px; margin-top:6px; }
+.living-feature p:not(.eyebrow) { color:var(--sub); font-size:14px; margin-top:8px; }
+.category-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px; }
+.category-tabs a { display:inline-flex; align-items:center; min-height:44px; border:1px solid var(--chip-line); background:white; border-radius:24px; padding:8px 15px; font-size:14px; text-decoration:none; }
+.category-tabs a[aria-current="page"] { background:var(--navy); color:white; border-color:var(--navy); }
+.page-intro { padding:38px 0 28px; }
+.page-intro h1 { margin-top:12px; font-size:30px; line-height:1.4; }
+.page-intro p:not(.eyebrow) { margin:16px 0 24px; color:var(--sub); max-width:38em; }
+.letter-sample { max-width:840px; border-top:5px solid var(--orange); }
+.letter-sample h2 { margin:20px 0 8px; font-size:25px; }
+.letter-outline { display:grid; gap:24px; padding:20px 0 20px 28px; }
+.letter-outline h3 { font-size:18px; }
+.letter-outline p { color:var(--sub); font-size:14px; margin-top:6px; }
+.partner-metrics { margin:24px 0; }
+.partner-metrics h3 { font-size:17px; }
+.partner-metrics p { color:var(--sub); font-size:14px; margin-top:8px; }
+#copy-status { margin-top:14px; }
+@media (min-width:1100px) {
+  .village-hero-inner { grid-template-columns:1.35fr 1fr; gap:72px; padding:64px 40px 80px; align-items:center; }
+  .village-hero h1 { font-size:49px; }
+  .hero-editorial { display:block; }
+  .pillar-grid { grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+  .pillar { padding:24px; }
+  .pillar h2 { font-size:23px; }
+  .pillar-hint { font-size:12px; }
+  .pillar p { font-size:13px; }
+  .village-letter { grid-template-columns:1.5fr 1fr; padding:40px; }
+  .village-letter h2 { font-size:34px; }
+  .letter-actions { align-items:flex-end; }
+}
+@media (min-width:900px) and (max-width:1199px) {
+  .nav { gap:0; }
+  .nav a { padding-left:8px; padding-right:8px; font-size:14px; }
+  .logo .logo-wide { height:34px; }
+}
+@media (max-width:899px) {
+  .site-header .inner { height:auto; min-height:60px; flex-wrap:wrap; gap:0; padding-top:10px; }
+  .logo { flex:1 1 100%; padding-bottom:8px; }
+  .nav { width:100%; overflow-x:auto; white-space:nowrap; gap:0; padding-bottom:4px; }
+  .nav .nav-link { display:inline-block; }
+  .nav a { font-size:13px; padding:10px 9px; }
+  .nav a[aria-current="page"] { color:var(--orange-text); font-weight:700; }
+  html { scroll-padding-top:114px; }
+  .village-section .section-head { align-items:flex-start; }
+  .village-section .section-head h2 { font-size:21px; }
+}
