@@ -9,5 +9,9 @@ window.CV_CONFIG = {
   supabaseUrl: "",
   supabaseAnonKey: "",
   dataCheckedAt: "2026-10-02",
-  contactEmail: "" // 운영 문의 이메일 (확정 후 입력)
+  contactEmail: "", // 기관·기업 문의 이메일 (확정 후 입력)
+  newsletterUrl: "", // 구독 서비스의 HTTPS 신청 페이지 (동의·수신거부 설정 후 연결)
+  newsletterArchiveUrl: "", // 실제 발행된 뉴스레터 모아보기 HTTPS 주소
+  openChatUrl: "" // 운영 중인 카카오 오픈채팅 HTTPS 초대 주소
 };
+

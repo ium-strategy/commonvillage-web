@@ -119,7 +119,7 @@
   /* ---------- 추천 ---------- */
   function regionKeyOf(p) { return p.area || p.province; }
   function recommend(d, provinceFilter) {
-    var list = PROGRAMS.filter(isOpen).filter(function (p) {
+    var list = PROGRAMS.filter(isOpen).filter(function(p) { return categoryOf(p) === "living"; }).filter(function (p) {
       if (p.province === "전국") return false;
       return !provinceFilter || !provinceFilter.length || provinceFilter.indexOf(p.province) >= 0;
     });
@@ -137,7 +137,7 @@
       if (b.score !== a.score) return b.score - a.score;
       return soonest(a) - soonest(b);
     });
-    var nationwide = PROGRAMS.filter(function (p) { return isOpen(p) && p.province === "전국" && fitOf(p, d.purpose) > 0; });
+    var nationwide = PROGRAMS.filter(function (p) { return categoryOf(p) === "living" && isOpen(p) && p.province === "전국" && fitOf(p, d.purpose) > 0; });
     var total = ranked.reduce(function (n, g) { return n + g.programs.length; }, 0) + nationwide.length;
     var ok = ranked.reduce(function (n, g) { return n + g.ok; }, 0);
     return { ranked: ranked, nationwide: nationwide, total: total, ok: ok, warn: total - ok };
@@ -185,14 +185,16 @@
     return '<header class="site-header"><div class="inner">' +
       '<a class="logo" href="#/" aria-label="커먼빌리지 홈"><img class="logo-mobile" src="brand/logo-ko-mobile.svg" alt="커먼빌리지"><img class="logo-wide" src="brand/logo-ko-header.svg" alt="커먼빌리지 Common Village"></a>' +
       '<nav class="nav" aria-label="주요 메뉴">' +
-      '<a class="nav-link" href="#/programs"' + (active === "programs" ? ' aria-current="page"' : "") + '>공고 전체</a>' +
-      '<a class="nav-link" href="#/regions"' + (active === "regions" ? ' aria-current="page"' : "") + '>지역 정보</a>' +
-      '<a class="nav-link" href="#/for-gov"' + (active === "gov" ? ' aria-current="page"' : "") + '>지자체 안내</a>' +
+      '<a class="nav-link" href="#/programs?category=all"' + (active === "programs" ? ' aria-current="page"' : "") + '>기회 찾기</a>' +
+      '<a class="nav-link" href="#/living"' + (active === "regions" ? ' aria-current="page"' : "") + '>지역살이</a>' +
+      '<a class="nav-link" href="#/newsletter"' + (active === "newsletter" ? ' aria-current="page"' : "") + '>뉴스레터</a>' +
+      '<a class="nav-link" href="#/community"' + (active === "community" ? ' aria-current="page"' : "") + '>함께하기</a>' +
+      '<a class="nav-link" href="#/partners"' + (active === "partners" || active === "gov" ? ' aria-current="page"' : "") + '>기관·기업</a>' +
       (u ? '<a class="nav-login" href="#/my">내 결과</a>' : '<a class="nav-login" href="#" data-action="open-login" data-reason="header">로그인</a>') +
       "</nav></div></header>";
   }
   function footer() {
-    return '<footer class="site-footer"><div class="inner"><nav aria-label="하단 메뉴"><a href="#/programs">공고 전체</a><a href="#/regions">지역 정보</a><a href="#/for-gov">지자체 안내</a><a href="#/report">성과 리포트 샘플</a><a href="#/privacy">개인정보 처리방침</a></nav>' +
+    return '<footer class="site-footer"><div class="inner"><nav aria-label="하단 메뉴"><a href="#/programs?category=all">기회 찾기</a><a href="#/newsletter">뉴스레터</a><a href="#/community">함께하기</a><a href="#/living">지역살이 가이드</a><a href="#/regions">지역 정보</a><a href="#/partners">기관·기업 안내</a><a href="#/for-gov">지자체 안내</a><a href="#/report">성과 리포트 샘플</a><a href="#/privacy">개인정보 처리방침</a></nav>' +
       "<p>공고 정보는 기관 원문을 기준으로 정리하며 확인일을 함께 표시합니다. 신청 전 반드시 원문을 확인하세요.</p><p>© 커먼빌리지 · 이음전략소</p></div></footer>";
   }
   var keepScroll = false;
@@ -220,6 +222,7 @@
     return '<span class="tag tag-plain">' + label + "</span>";
   }
   function verifyTag(p) {
+    if (!safeWebUrl(p.sourceUrl)) return '<span class="tag tag-news">원문 링크 확인 필요</span>';
     var m = { official: ["tag-official", "기관 원문 확인"], operator: ["tag-operator", "운영사 안내"], news: ["tag-news", "보도 기준 · 원문 확인 중"] }[p.verify];
     return '<span class="tag ' + m[0] + '">' + m[1] + "</span>";
   }
@@ -229,7 +232,7 @@
       '<span class="tags">' + deadlineTag(p) + verifyTag(p) + "</span>" +
       '<span class="title">' + esc(p.title) + "</span>" +
       '<span class="benefit">' + (p.benefit ? esc(p.benefit) : '<span class="muted">혜택 원문 확인 필요</span>') + "</span>" +
-      '<span class="meta">' + esc(placeOf(p)) + " · " + TYPE_LABEL[p.type] + " · 확인일 " + dotDate(p.checkedAt) + "</span></a>";
+      '<span class="meta">' + esc(placeOf(p)) + " · " + esc(TYPE_LABEL[p.type] || p.typeLabel || "기회") + " · 확인일 " + dotDate(p.checkedAt) + "</span></a>";
   }
   function sortOpen(a, b) {
     var rank = function (p) { return p.deadlineType === "date" ? 0 : p.deadlineType === "first-come" ? 1 : p.deadlineType === "budget" ? 2 : 3; };
@@ -238,7 +241,79 @@
     return a.title.localeCompare(b.title, "ko");
   }
 
-  /* ---------- 홈 ---------- */
+
+  /* ---------- 청년 기회 · 뉴스레터 · 참여 ---------- */
+  var CATEGORIES = [
+    { id: "living", label: "살 곳", desc: "청년주택 · 기숙사 · 지역살이", hint: "내 생활이 시작될 곳", icon: "⌂" },
+    { id: "support", label: "지원받을 곳", desc: "취업 · 창업 · 교육 · 장학금", hint: "다음 걸음을 위한 기회", icon: "+" },
+    { id: "enjoy", label: "즐길 곳", desc: "축제 · 전시 · 체험 · 지역 행사", hint: "이번 주말의 새로운 경험", icon: "✳" },
+    { id: "challenge", label: "도전할 곳", desc: "공모전 · 대회 · 프로젝트", hint: "함께라서 가능한 도전", icon: "↗" }
+  ];
+  function categoryOf(p) { return p.category || "living"; }
+  function categoryLinks(selected) {
+    return '<nav class="category-tabs" aria-label="기회 분야"><a href="#/programs?category=all"' + (!selected ? ' aria-current="page"' : '') + '>전체</a>' +
+      CATEGORIES.map(function(c) { return '<a href="#/programs?category=' + c.id + '"' + (selected === c.id ? ' aria-current="page"' : '') + '>' + c.label + '</a>'; }).join('') + '</nav>';
+  }
+  function safeWebUrl(value) {
+    try { var u = new URL(value); return u.protocol === "https:" ? u.href : ""; } catch(e) { return ""; }
+  }
+  function channelLink(key, label, cls) {
+    var url = safeWebUrl(CFG[key]);
+    return url ? '<a class="btn ' + (cls || 'btn-primary') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" data-action="channel-out" data-value="' + esc(key) + '">' + label + ' ↗</a>' :
+      '<span class="channel-pending">' + label + ' · 준비 중</span>';
+  }
+  function newsletterPanel() {
+    return '<section class="section village-letter" aria-labelledby="letter-title"><div><p class="eyebrow">COMMONVILLAGE LETTER</p><h2 id="letter-title">이번 주의 기회,<br>한 통으로 만나세요.</h2><p>지원할 공고, 주말에 즐길 경험, 함께 도전할 기회까지.<br>청년의 일주일에 필요한 소식을 모읍니다.</p></div><div class="letter-actions">' +
+      channelLink('newsletterUrl', '뉴스레터 구독하기', 'btn-yellow') + '<a href="#/newsletter">어떤 소식을 보내나요? →</a><span class="small">주 1회 발행 예정 · 무료</span></div></section>';
+  }
+  function viewHome() {
+    var verified = PROGRAMS.filter(function(p) { return isOpen(p) && safeWebUrl(p.sourceUrl) && p.verify === "official"; }).sort(sortOpen).slice(0, 3);
+    var weekly = verified.length ? '<div class="program-list grid">' + verified.map(programCard).join('') + '</div>' :
+      '<div class="weekly-empty"><span class="weekly-mark" aria-hidden="true">↗</span><div><h3>이번 주에 소개할 기회를 고르고 있어요</h3><p>대상·마감·혜택과 원문을 확인한 공고부터 소개합니다.</p><a href="#/programs?category=all">기존 지역살이 공고 둘러보기 →</a></div></div>';
+    var html = '<section class="village-hero"><div class="wrap village-hero-inner"><div><p class="eyebrow">청년의 일상에, 새로운 가능성</p><h1>기회를 만나고,<br><em>함께 경험하는 곳.</em></h1><p class="hero-description">살 곳부터 함께 도전할 사람까지.<br>나에게 필요한 기회를 찾고, 다음 경험을 시작해요.</p><div class="gov-actions"><a class="btn btn-yellow" href="#/programs?category=all">나에게 필요한 기회 찾기 ↗</a><a class="btn btn-ghost-w" href="#/newsletter">이번 주 소식 받기</a></div></div><aside class="hero-editorial"><span class="editorial-label">OUR VILLAGE</span><p>혼자 찾던 기회가<br>함께하는 경험으로.</p><div class="editorial-steps"><span>발견</span><i>→</i><span>참여</span><i>→</i><span>경험</span></div><span class="editorial-caption">커먼빌리지 · 이음전략소</span></aside></div></section>' +
+      '<div class="wrap"><section class="pillar-grid" aria-label="네 가지 청년 기회">' + CATEGORIES.map(function(c) {
+        return '<a class="pillar" href="#/programs?category=' + c.id + '"><span class="pillar-icon" aria-hidden="true">' + c.icon + '</span><span class="pillar-hint">' + c.hint + '</span><h2>' + c.label + '<span aria-hidden="true">↗</span></h2><p>' + c.desc + '</p></a>';
+      }).join('') + '</section>' +
+      '<section class="section village-section"><div class="section-head"><div><p class="eyebrow">이번 주, 무엇을 해볼까요?</p><h2>이번 주 눈여겨볼 기회</h2></div><a href="#/programs?category=all">공고 전체 →</a></div>' + weekly + '</section>' +
+      newsletterPanel() +
+      '<section class="section village-section"><div class="section-head"><div><p class="eyebrow">사람과 경험이 모이는 마을</p><h2>혼자 고민하지 않아도 괜찮아요</h2></div><a href="#/community">참여 안내 →</a></div><div class="g3 action-grid">' +
+      '<a class="card action-card" href="#/community?type=question"><span class="action-number">01</span><h3>질문하기</h3><p>신청 조건이 헷갈리나요?<br>막힌 부분부터 함께 확인해요.</p><b>질문 정리하기 →</b></a>' +
+      '<a class="card action-card" href="#/community?type=together"><span class="action-number">02</span><h3>함께하기</h3><p>행사에 같이 갈 사람,<br>공모전에 도전할 팀원을 찾아요.</p><b>모집글 준비하기 →</b></a>' +
+      '<a class="card action-card" href="#/community?type=review"><span class="action-number">03</span><h3>후기 남기기</h3><p>비용·소요시간·추천 여부.<br>먼저 해본 경험을 나눠주세요.</p><b>경험 정리하기 →</b></a></div></section>' +
+      '<section class="section living-feature"><div><p class="eyebrow">커먼빌리지의 지역살이 가이드</p><h2>다른 동네에서 살아보고 싶다면?</h2><p>기존 1분 진단과 지역 생활정보로 나에게 맞는 지역살이를 찾아보세요.</p></div><a class="btn btn-line" href="#/living">지역살이 가이드 →</a></section>' +
+      '<section class="section home-gov"><p class="eyebrow">기관 · 기업 담당자님께</p><h2>청년에게 닿고,<br>참여로 이어지는 모집 홍보</h2><p class="lead">이음전략소의 모집 홍보와 커먼빌리지의 콘텐츠를 연결합니다. 공고 소개부터 콘텐츠 제작, 참여 프로그램 운영까지 함께 설계합니다.</p><div class="gov-actions"><a class="btn btn-yellow" href="#/partners">기관 홍보·협업 안내</a><a class="btn btn-ghost-w" href="#/for-gov">지자체 지역살이 사업 안내</a></div></section></div>';
+    render(html, "home");
+  }
+  function viewNewsletter() {
+    render('<div class="wrap"><section class="page-intro"><p class="eyebrow">커먼빌리지 주간 소식</p><h1>기회를 놓치지 않는<br>가장 가벼운 습관</h1><p>찾아다니는 시간을 줄이도록, 이번 주에 살펴볼 소식을 한 통에 담을 예정이에요.</p>' + channelLink('newsletterUrl', '뉴스레터 구독하기') + '</section>' +
+      '<section class="card letter-sample"><span class="tag tag-plain">발행 형식 미리보기 · 실제 발행호 아님</span><h2>이번 주, 우리에게 열린 기회</h2><p class="muted">매주 아래 세 가지 소식으로 찾아갑니다.</p><ol class="letter-outline"><li><h3>이번 주 신청할 기회</h3><p>신청 대상 · 지역 · 마감일 · 혜택 · 원문 링크를 한눈에.</p></li><li><h3>이번 주말 함께할 경험</h3><p>가볍게 다녀올 행사와 체험, 함께할 사람을 찾는 소식.</p></li><li><h3>먼저 해본 사람의 한마디</h3><p>신청 과정에서 막힌 점과 다녀온 뒤 알게 된 팁.</p></li></ol><p class="notice-box">광고·협찬 콘텐츠는 별도로 표시합니다. 신청 조건과 일정은 기관 원문에서 최종 확인해 주세요.</p></section>' +
+      '<section class="section card"><h2>지난 소식</h2><p class="muted">첫 소식을 준비하고 있어요. 발행 후 이곳에서 다시 볼 수 있습니다.</p>' +
+      (safeWebUrl(CFG.newsletterArchiveUrl) ? channelLink('newsletterArchiveUrl', '지난 뉴스레터 보기', 'btn-line') : '') + '</section>' +
+      '<section class="section living-feature"><div><h2>소식을 보고 궁금해졌다면</h2><p>오픈채팅에서 질문하고, 함께 참여할 사람을 만나세요.</p></div>' + channelLink('openChatUrl', '오픈채팅 참여하기', 'btn-kakao') + '</section></div>', 'newsletter');
+  }
+  var PARTICIPATION = {
+    question: { label: "질문하기", text: "공고 이름 / 원문 링크:\n궁금한 신청 조건:\n원문에서 확인한 내용:\n아직 헷갈리는 부분:" },
+    together: { label: "함께하기", text: "함께할 행사 / 프로젝트:\n일정과 장소:\n모집 인원과 역할:\n예상 비용:\n참여 방법:" },
+    review: { label: "후기 남기기", text: "참여한 기회:\n실제 비용:\n소요시간:\n추천 여부와 이유:\n다음 참여자에게 한 가지 팁:" }
+  };
+  function viewCommunity(params) {
+    var type = PARTICIPATION[params.type] ? params.type : "question", selected = PARTICIPATION[type];
+    render('<div class="narrow"><section class="page-intro"><p class="eyebrow">함께하는 커먼빌리지</p><h1>질문 하나, 함께할 사람,<br>먼저 해본 경험.</h1><p>글을 어떻게 시작할지 막막하다면 아래 양식을 활용해 보세요.</p></section>' +
+      '<nav class="category-tabs" aria-label="참여 방식">' + Object.keys(PARTICIPATION).map(function(k) { return '<a href="#/community?type=' + k + '"' + (type === k ? ' aria-current="page"' : '') + '>' + PARTICIPATION[k].label + '</a>'; }).join('') + '</nav>' +
+      '<section class="card"><h2>' + selected.label + '</h2><p class="small muted">작성 내용은 전송되거나 저장되지 않아요. 복사해서 오픈채팅에 공유할 수 있어요.</p><div class="field"><label for="community-draft">공유할 내용</label><textarea id="community-draft" rows="9">' + esc(selected.text) + '</textarea></div><div class="gov-actions"><button class="btn btn-primary" type="button" data-action="copy-community">작성 내용 복사</button>' + channelLink('openChatUrl', '오픈채팅 참여하기', 'btn-kakao') + '</div><p id="copy-status" class="small muted" role="status" aria-live="polite"></p></section>' +
+      '<section class="section card"><h2>편하게, 서로를 존중하며</h2><ul class="gov-list"><li>질문에는 공고 원문을, 모집에는 일정과 비용을 적어주세요.</li><li>전화번호 등 개인정보는 공개 글에 올리지 마세요.</li><li>광고·이해관계가 있는 추천은 먼저 밝혀주세요.</li></ul><p class="small muted">사이트 게시판은 준비 중입니다. 게시판이 열리면 질문과 경험을 사이트에서도 모아볼 수 있어요.</p></section></div>', 'community');
+  }
+  function viewPartners() {
+    var mail = (CFG.contactEmail || "").trim();
+    var contact = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(mail) ? '<a class="btn btn-yellow" href="mailto:' + esc(mail) + '?subject=' + encodeURIComponent('[커먼빌리지] 청년 모집 홍보 문의') + '" data-action="partner-contact">홍보·협업 문의하기</a>' : '<span class="channel-pending">홍보·협업 문의 창구 준비 중</span>';
+    render('<section class="gov-hero"><div class="wrap"><p class="eyebrow">COMMONVILLAGE × 이음전략소</p><h1>청년의 관심에서<br>실제 참여까지, 함께 설계합니다.</h1><p class="lead">기관은 참여할 청년을 만나고, 청년은 자신에게 필요한 기회를 만납니다. 이음전략소의 모집 홍보에 커먼빌리지의 청년 콘텐츠와 커뮤니티를 연결합니다.</p><div class="gov-actions">' + contact + '<a class="btn btn-ghost-w" href="#/report">성과 리포트 형식 보기</a></div></div></section>' +
+      '<div class="wrap"><section class="section village-section"><div class="section-head"><div><p class="eyebrow">사업에 맞춰 조합하는 협업</p><h2>어떤 도움이 필요하신가요?</h2></div></div><div class="g3"><article class="card"><span class="tag tag-plain">01 · 공고 소개</span><h3>필요한 청년에게 알리기</h3><p>공고 정보 정리, 사이트 노출, 주간 소식과 오픈채팅 소개를 협의합니다.</p></article><article class="card"><span class="tag tag-plain">02 · 모집 홍보</span><h3>신청으로 이어지는 콘텐츠</h3><p>모집 대상에 맞춘 콘텐츠 제작과 채널별 배포, 반응 확인을 함께 진행합니다.</p></article><article class="card"><span class="tag tag-plain">03 · 참여 프로그램</span><h3>직접 경험할 기회 만들기</h3><p>설명회·체험단·지역 탐방 등 기관과 청년이 만나는 프로그램을 기획합니다.</p></article></div><p class="disclaimer">채널 운영 현황과 제공 범위를 확인한 뒤 제안드립니다. 비용은 기간·제작 범위·운영 방식에 따라 협의하며, 도달 수나 모집 인원을 사전에 보장하지 않습니다.</p></section>' +
+      '<section class="section card"><h2>기관이 확인할 수 있는 결과</h2><div class="g3 partner-metrics"><div><h3>얼마나 닿았는지</h3><p>콘텐츠 조회 · 채널별 노출</p></div><div><h3>어떤 관심이 생겼는지</h3><p>공고 상세 조회 · 원문 이동</p></div><div><h3>참여로 이어졌는지</h3><p>기관과 공유 범위를 정한 신청 · 참여 결과</p></div></div><p class="small muted">원문 링크 클릭과 신청 완료는 구분합니다. 신청·참여 결과는 기관이 확인한 자료가 있을 때만 보고합니다.</p></section>' +
+      '<section class="section living-feature"><div><p class="eyebrow">운영사 · 이음전략소</p><h2>청년에 집중하는 모집 홍보 파트너</h2><p>운영사의 수행 경험과 커먼빌리지 자체 운영 성과는 구분해 안내합니다.<br>공개 가능한 수행 사례는 확인 후 소개할 예정입니다.</p></div><a class="btn btn-line" href="#/for-gov">지자체 사업 상세 안내 →</a></section>' +
+      '<section class="section home-gov"><h2>모집 목표를 들려주세요</h2><p class="lead">기관명, 사업명, 모집 대상·인원, 모집 일정, 필요한 지원과 예산 범위를 알려주시면 협업 범위를 검토합니다.</p><div class="gov-actions">' + contact + '</div></section></div>', 'partners');
+  }
+
+  /* ---------- 기존 지역살이 홈 ---------- */
   var homeChips = { duration: [], province: [], cond: ["open"] };
   function chipBtn(group, value, label, on) {
     return '<button type="button" class="chip" data-action="chip" data-group="' + group + '" data-value="' + esc(value) + '" aria-pressed="' + (on ? "true" : "false") + '">' + esc(label) + "</button>";
@@ -248,7 +323,7 @@
       '<circle cx="1180" cy="110" r="56" fill="#EB6226"/><circle cx="1180" cy="110" r="28" fill="#F6BC43"/>' +
       '<g fill="none" stroke="#5D7A90" stroke-width="1.5"><polyline points="0,370 90,300 180,370 180,430 0,430"/><polyline points="160,350 280,260 400,350 400,430 160,430"/><polyline points="1000,360 1100,290 1200,360 1200,430 1000,430"/><polyline points="1180,340 1300,250 1420,340 1420,430 1180,430"/><line x1="0" y1="430" x2="1440" y2="430"/></g></svg>';
   }
-  function viewHome() {
+  function viewLiving() {
     var q = QUESTIONS[0];
     var opts = q.options.map(function (o) {
       return '<button type="button" class="option" data-action="home-purpose" data-value="' + o.v + '"><span><span class="t">' + o.t + '</span><span class="s">' + o.s + "</span></span>" + ICON_NEXT + "</button>";
@@ -261,7 +336,7 @@
     var c = homeChips;
     var html =
       '<section class="hero"><div class="inner">' + heroScene() +
-      '<span class="photo-note">대표 이미지 자리 · 직접 촬영한 생활 장면</span>' +
+      '' +
       '<p class="eyebrow">전국 지역 살아보기·워케이션 공고</p><h1>나는 어느 지역에서 살아볼 수 있을까?</h1></div></section>' +
       '<section class="diag-card" aria-labelledby="diag-q"><div class="diag-top"><span class="badge-diag">1분 진단</span><span class="small muted">질문 1 / 6</span></div>' +
       '<div class="progress" aria-hidden="true"><span style="width:16%"></span></div>' +
@@ -281,7 +356,7 @@
       '<section class="section home-gov"><p class="eyebrow">지자체 담당자님께</p><h2>지자체는 오래 머물 사람을 찾고,<br>사람은 나에게 맞는 지역을 찾습니다</h2>' +
       '<p class="lead">공고를 올리는 데서 끝나지 않고, 지역에 오래 머물 사람을 모집합니다. 노출 수가 아니라 \'적합 수요자 수\'로 성과를 보고합니다.</p>' +
       '<div class="gov-actions"><a class="btn btn-yellow" href="#/for-gov">지자체 전용 안내 보기</a><a class="btn btn-ghost-w" href="#/report">성과 리포트 샘플 보기</a></div></section></div>';
-    render(html, "home");
+    render(html, "regions");
   }
 
   /* ---------- 진단 ---------- */
@@ -379,14 +454,17 @@
   }
 
   /* ---------- 공고 목록 ---------- */
-  var listState = { tab: "open", province: [], duration: [], cond: [], showUnknown: false };
+  var listState = { category: "", tab: "open", province: [], duration: [], cond: [], showUnknown: false };
   function viewList(params) {
+    if (Object.prototype.hasOwnProperty.call(params, "category")) {
+      listState = { category: CATEGORIES.some(function(c) { return c.id === params.category; }) ? params.category : "", tab: "open", province: [], duration: [], cond: [], showUnknown: false };
+    }
     if (params.tab) listState.tab = params.tab;
     if (params.province !== undefined) listState.province = params.province ? params.province.split(",") : [];
     if (params.duration !== undefined) listState.duration = params.duration ? params.duration.split(",") : [];
     if (params.cond !== undefined) listState.cond = params.cond ? params.cond.split(",") : [];
     var s = listState;
-    var base = PROGRAMS.filter(function (p) { return s.tab === "open" ? isOpen(p) : !isOpen(p); })
+    var base = PROGRAMS.filter(function(p) { return !s.category || categoryOf(p) === s.category; }).filter(function (p) { return s.tab === "open" ? isOpen(p) : !isOpen(p); })
       .filter(function (p) { return !s.province.length || s.province.indexOf(p.province) >= 0 || p.province === "전국"; });
     var strictConds = s.cond.filter(function (c) { return c === "nopay" || c === "nosns"; });
     var matched = base.filter(function (p) {
@@ -399,13 +477,13 @@
     var unknownNote = strictConds.length && unknownCount && !s.showUnknown ?
       '<div class="card empty" style="margin-bottom:10px"><p>' + (matched.length ? "" : "아직 이 조건이 확인된 공고가 없어요. ") + "자부담·SNS 과제 정보가 정리되지 않은 공고가 " + unknownCount + "건 있어요.</p>" +
       '<button type="button" class="btn btn-line" style="margin-top:12px" data-action="show-unknown">정보 미확인 공고도 보기</button></div>' : "";
-    var html = '<div class="wrap"><div class="card" style="margin-top:20px"><h1 style="font-size:24px;margin-bottom:14px">공고 전체</h1>' +
+    var html = '<div class="wrap"><div class="card" style="margin-top:20px"><h1 style="font-size:24px;margin-bottom:14px">나에게 필요한 기회 찾기</h1>' + categoryLinks(s.category) +
       '<div class="chip-group"><div class="chips">' + chipBtn("lprov", "", "어디든", !s.province.length) + PROVINCES.map(function (pv) { return chipBtn("lprov", pv.name, pv.name, s.province.indexOf(pv.name) >= 0); }).join("") + "</div></div>" +
       '<div class="chip-group"><div class="chips">' + ["1w", "2-4w", "1-3m", "3m+"].map(function (v) { return chipBtn("ldur", v, DURATION_LABEL[v], s.duration.indexOf(v) >= 0); }).join("") +
       chipBtn("lcond", "nopay", "자부담 0원", s.cond.indexOf("nopay") >= 0) + chipBtn("lcond", "nosns", "SNS 과제 없음", s.cond.indexOf("nosns") >= 0) + "</div></div>" +
       '<div class="tabs" role="tablist" style="margin-top:16px"><button type="button" role="tab" data-action="tab" data-value="open" aria-selected="' + (s.tab === "open") + '">모집 중</button><button type="button" role="tab" data-action="tab" data-value="closed" aria-selected="' + (s.tab === "closed") + '">지난 모집</button></div></div>' +
       '<div style="display:flex;justify-content:space-between;padding:14px 4px 8px" class="small muted"><span>' + shown.length + "건</span><span>" + (s.tab === "open" ? "마감 임박순" : "가나다순") + "</span></div>" +
-      durationNote + unknownNote + '<div class="program-list grid">' + (shown.length ? shown.map(programCard).join("") : "") + "</div></div>";
+      durationNote + unknownNote + '<div class="program-list grid">' + (shown.length ? shown.map(programCard).join("") : '<div class="card empty"><h2>조건에 맞는 공고를 준비하고 있어요</h2><p>다른 분야를 살펴보거나 뉴스레터 발행 안내를 확인해 주세요.</p><a href="#/newsletter">주간 소식 안내 →</a></div>') + "</div></div>";
     render(html, "programs");
   }
 
@@ -440,7 +518,7 @@
       '<p class="small muted" style="margin-top:12px">판정은 공고 원문을 기준으로 한 참고 정보입니다. 최종 자격은 운영 기관에 확인하세요. <a href="mailto:' + esc(CFG.contactEmail || "") + "?subject=" + encodeURIComponent("[판정 오류 신고] " + p.title) + '">판정 오류 신고</a></p></section>' +
       regionHtml +
       '<p class="small muted" style="margin-top:20px">출처: ' + (p.sourceUrl ? '<a href="' + esc(p.sourceUrl) + '" target="_blank" rel="noopener">기관 원문</a>' : "원문 링크 등록 전") + "</p>" +
-      '<p class="small muted">참여 후기는 다음 업데이트에서 열립니다.</p></div>' +
+      '<section class="card section"><h2>이 기회, 함께 이야기해요</h2><div class="gov-actions"><a href="#/community?type=question">질문하기 →</a><a href="#/community?type=together">함께하기 →</a><a href="#/community?type=review">후기 남기기 →</a></div></section></div>' +
       '<div class="sticky-cta"><button type="button" class="icon-btn" data-action="fav" data-id="' + esc(p.id) + '" aria-pressed="' + faved + '" aria-label="관심 공고로 저장">' + ICON_SAVE + "</button>" +
       (isOpen(p) ? (p.sourceUrl ? '<a class="btn btn-primary" style="flex-grow:1" href="' + esc(p.sourceUrl) + '" target="_blank" rel="noopener" data-action="apply" data-id="' + esc(p.id) + '">기관 원문에서 신청하기</a>' : '<button type="button" class="btn btn-primary" style="flex-grow:1" disabled>원문 링크 준비 중</button>') :
         '<button type="button" class="btn btn-soft" style="flex-grow:1" data-action="watch" data-id="' + esc(p.id) + '">다시 열리면 알림 받기</button>') + "</div></div>";
@@ -709,7 +787,7 @@
     if (!el) return;
     var a = el.getAttribute("data-action"), v = el.getAttribute("data-value");
     if (a === "close-login-bg") { if (e.target === el) closeLogin(); return; }
-    if (a !== "apply" && el.tagName === "A" && a !== "restart" && a !== "close-login") e.preventDefault();
+    if (["apply", "channel-out", "partner-contact", "restart", "close-login"].indexOf(a) < 0 && el.tagName === "A") e.preventDefault();
     var d = getDiag();
     switch (a) {
       case "home-purpose":
@@ -752,7 +830,7 @@
         listState.tab = homeChips.cond.indexOf("open") >= 0 ? "open" : "closed";
         listState.showUnknown = false;
         track("chip_search", { province: homeChips.province.join(","), duration: homeChips.duration.join(","), cond: homeChips.cond.join(",") });
-        go("#/programs?province=" + encodeURIComponent(homeChips.province.join(",")) + "&duration=" + encodeURIComponent(homeChips.duration.join(",")) + "&cond=" + encodeURIComponent(homeChips.cond.filter(function (c) { return c !== "open"; }).join(",")) + "&tab=" + listState.tab);
+        go("#/programs?category=living&province=" + encodeURIComponent(homeChips.province.join(",")) + "&duration=" + encodeURIComponent(homeChips.duration.join(",")) + "&cond=" + encodeURIComponent(homeChips.cond.filter(function (c) { return c !== "open"; }).join(",")) + "&tab=" + listState.tab);
         break;
       case "tab": listState.tab = v; listState.showUnknown = false; refresh(function () { viewList({}); }); break;
       case "show-unknown": listState.showUnknown = true; refresh(function () { viewList({}); }); break;
@@ -787,6 +865,21 @@
         var target = document.getElementById(el.getAttribute("data-target"));
         if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
         break;
+      case "channel-out":
+        track("channel_outbound", { channel: v }); break;
+      case "partner-contact":
+        track("partner_contact_click", { mode: "mailto" }); break;
+      case "copy-community":
+        var draft = document.getElementById("community-draft");
+        var copyStatus = document.getElementById("copy-status");
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(draft.value).then(function() {
+            if (copyStatus.isConnected) copyStatus.textContent = "복사했어요. 공유할 곳에 붙여넣어 주세요.";
+          }).catch(function() {
+            if (copyStatus.isConnected) { draft.focus(); draft.select(); copyStatus.textContent = "선택한 내용을 직접 복사해 주세요 (Ctrl+C / ⌘C)."; }
+          });
+        } else { draft.focus(); draft.select(); copyStatus.textContent = "선택한 내용을 직접 복사해 주세요 (Ctrl+C / ⌘C)."; }
+        track("community_template_copy", {}); break;
       case "print-report":
         track("report_download", {}); window.print(); break;
       case "withdraw":
@@ -840,6 +933,10 @@
     if (qi >= 0) h.slice(qi + 1).split("&").forEach(function (kv) { var p = kv.split("="); if (p[0]) params[p[0]] = decodeURIComponent(p[1] || ""); });
     var seg = path.split("/").filter(Boolean);
     if (!seg.length) return viewHome();
+    if (seg[0] === "living") return viewLiving();
+    if (seg[0] === "newsletter") return viewNewsletter();
+    if (seg[0] === "community") return viewCommunity(params);
+    if (seg[0] === "partners") return viewPartners();
     if (seg[0] === "diagnose") return viewStep(Math.min(Math.max(+seg[1] || 1, 1), 6));
     if (seg[0] === "result") return viewResult();
     if (seg[0] === "programs") return viewList(params);
@@ -854,3 +951,4 @@
   window.addEventListener("hashchange", route);
   route();
 })();
+
