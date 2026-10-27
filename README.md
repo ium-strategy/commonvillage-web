@@ -1,44 +1,71 @@
-# 커먼빌리지 — 반응형 카페 시안 (2026-10-21)
+# 커먼빌리지 웹사이트
 
-승인된 `CommonVillage_Responsive_Preview.html`을 내용 변경 없이 `index.html`에 반영했습니다. 앞으로 이 메인 화면을 기준으로 기능과 디자인을 순차 개선합니다.
+청년 공고(살 곳 · 지원받을 곳 · 즐길 곳 · 도전할 곳)를 모아 공고마다 고유 주소의 정적 HTML로 만드는 사이트입니다.
+2026-10-27 애드센스 대응 요구사항에 따라 한 파일 시안(`index.html`)을 **템플릿·스타일·스크립트·데이터**로 나누고,
+빌드 스크립트가 홈·목록·상세·사이트맵을 생성하는 구조로 바꿨습니다. 디자인과 4개 카테고리는 승인된 시안 그대로입니다.
 
-## 현재 수정 기준
-- `index.html`: HTML·CSS·JavaScript가 포함된 단일 파일. PC 전체 폭 히어로, 모바일 공고 두 열과 하단 메뉴.
-- 네 가지 카테고리: 살 곳 / 지원받을 곳 / 즐길 곳 / 도전할 곳.
-- 기회 검색·필터·정렬·상세, 브라우저 보관함, 질문·후기 초안, 뉴스레터 구성 미리보기.
-- 파일을 브라우저로 직접 열거나 정적 서버로 실행할 수 있습니다. 빌드가 필요하지 않습니다.
-- Google Fonts가 연결되지 않으면 시스템 글꼴로 표시됩니다.
+## 폴더 구성
 
-## 시안의 범위
-공고·마감·라운지 글은 모두 예시입니다. 보관함과 초안은 현재 브라우저에만 저장됩니다. 실제 회원가입, 공고 신청, 질문 게시·기관 답변, 뉴스레터 구독·메일 발송은 아직 연결하지 않았습니다.
-JavaScript 구문 검사를 완료했습니다. 브라우저 연결 제약으로 PC·모바일 화면 및 터치 동작의 실기 검증은 미완료입니다.
+| 경로 | 내용 |
+|---|---|
+| `build.py` | 빌드 실행 파일. `python build.py` → `dist/` 생성 (Python 3.8 이상, 추가 설치 없음) |
+| `cv/` | 빌드 코드. `data.py`(시트·API 읽기, 상태 계산), `html.py`(템플릿·카드·광고 조각) |
+| `config.json` | 사이트 주소, 운영자 정보, 카테고리 설명, 애널리틱스·애드센스 설정 |
+| `config/youthcenter.json` | 온통청년 API 호출·필드 매핑 설정(인증키는 넣지 않음) |
+| `data/sheet/notices.csv` | 운영자 직접 입력 공고(구글 시트 CSV). 열 설명은 `data/sheet/README.md` |
+| `data/sheet/commentary.csv` | 커먼빌리지 해설. `승인` 상태만 게시 |
+| `data/raw/youthcenter/` | 온통청년 API 원본(날짜별 보관, 되돌리기용) |
+| `src/templates/` | 페이지 템플릿(base, home, list, notice, guide, page, search, 404) |
+| `src/css/site.css`, `src/js/site.js` | 스타일(시안 CSS 원본 + 추가)과 공통 스크립트 |
+| `src/content/pages/` | 소개·문의·개인정보처리방침·이용약관(수기 작성) |
+| `src/content/guides/` | 가이드 글(수기 작성). 파일 하나 = `/guide/<slug>/` 한 페이지 |
+| `src/static/og/` | 카테고리별 공유 미리보기 이미지(`scripts/make_og_images.js`로 생성) |
+| `scripts/fetch_sheet.py` | 구글 시트 CSV 내려받기 |
+| `scripts/fetch_youthcenter.py` | 온통청년 API 수집·원본 보관·전날 대비 변경 기록 |
+| `.github/workflows/build.yml` | 매일 05:00(KST)·푸시 시 자동 빌드 → GitHub Pages 배포 |
+| `netlify.toml` | Netlify 를 쓸 경우의 빌드 설정 |
+| `legacy.html`, `assets/`, `data/*.js`, `brand/` | 이전 v3.0 앱(1분 진단). 빌드 시 `/check/` 에 noindex 로 복사 |
+| `docs/` | 담당자용 설명서. 빌드·배포는 `docs/7_빌드와-배포.md` |
 
-## 기존 구현 보관
-- `legacy.html`: 변경 전 메인 진입 파일. 같은 위치의 `assets/`, `data/`, `brand/`를 사용하는 기존 지역살이 사이트입니다.
-- 기존 데이터·로고·코드와 문서는 유지합니다. 아래 설명은 기존 구현용이며, 새 메인 화면의 동작 설명과 구분해서 참고하세요.
-- `build_preview.py`는 기존 자산 구조를 위한 도구입니다. 새 단일 파일 시안은 이 빌드가 필요하지 않습니다.
+## 생성되는 페이지
 
----
+| 주소 | 내용 | 색인 |
+|---|---|---|
+| `/` | 홈(시안 디자인). 모집 중 공고를 마감 가까운 순으로 | O |
+| `/notices/`, `/housing/`, `/support/`, `/play/`, `/challenge/` | 전체·카테고리 목록. 30건씩 `/housing/page/2/` | O |
+| `/region/`, `/region/seoul/` … | 지역별 목록(공고가 있는 시·도만) | O |
+| `/p/<slug>/` | 공고 상세(경로 › 제목·상태 › 요약 › 조건표 › 해설 › 원문 버튼 › 관련 3건 › 광고 자리) | 해설 승인 + 원문 링크가 있을 때만 O, 아니면 noindex |
+| `/guide/`, `/guide/<slug>/` | 가이드 | O |
+| `/about/`, `/contact/`, `/privacy/`, `/terms/` | 필수 페이지. 모든 페이지 푸터에서 연결 | O |
+| `/search/?q=` | 검색(JS, `notices.json` 사용) | noindex |
+| `/check/` | 1분 진단(이전 앱). 광고 없음 | noindex |
+| `/sitemap.xml`, `/robots.txt`, `/404.html`, (설정 시) `/ads.txt`, `/CNAME` | | |
 
-## 커먼빌리지 웹사이트 v3.0 (2026-10-02)
+## 로컬에서 보기
 
-웹기획안 v3.0과 확정 시안을 구현한 정적 사이트입니다. GitHub Pages에 그대로 올릴 수 있습니다.
+```
+python build.py --site-url http://127.0.0.1:4399 --base-path ""
+python serve.py
+```
+윈도우에서는 `사이트 열어보기.bat` 을 두 번 클릭하면 같은 일을 합니다.
 
-## 구성
-- index.html — 진입 파일 (화면은 주소의 # 경로로 바뀜: #/ 홈, #/diagnose/1~6 진단, #/result 결과, #/programs 공고, #/program/<id> 상세, #/regions/<도> 지역 정보, #/my 내 결과·알림, #/privacy 처리방침, #/for-gov 지자체 전용 안내, #/report 성과 리포트 샘플)
-- assets/css/app.css — 스타일
-- assets/js/config.js — 로그인 방식 설정 (지금은 demo: 이 기기에만 임시 로그인)
-- assets/js/app.js — 진단·판정·추천·필터·로그인·알림 설정 동작
-- data/programs.js — 공고 데이터 (확인 안 된 값은 null → 화면에 "원문 확인 필요")
-- data/regions.js — 도별 10곳 지역 정보 (지표 값 정리 전)
-- brand/ — 로고 Navy v2, 파비콘, 웹 매니페스트
-- build_preview.py — 한 파일 미리보기 빌드용 (배포에는 필요 없음)
+## 데이터 규칙
 
-## 배포 전에 남은 일
-1. data/programs.js: 기존 저장소의 공고 16건 상세(원문 링크, 기간, 대상, 혜택, 자부담, 과제)로 채우기
-2. data/regions.js: 10곳 지역 소개와 6개 지표 값·기준일 채우기
-3. 로그인: Supabase 프로젝트 생성 → Kakao·Google 공급자 설정 → config.js authMode "supabase"와 키 입력 → supabase-js 스크립트 추가
-4. 알림 발송: 카카오 발송 방식(알림톡/채널 메시지)과 이메일 발송 서비스 선정 후 연결
-5. 개인정보 처리방침 초안의 [확정 필요] 항목 채우고 법무 검토
-6. 측정: window.dataLayer 이벤트(diagnosis_start, diagnosis_complete, login_click, apply_click 등)를 분석 도구에 연결
-7. 검색 노출: 공고별 정적 페이지와 sitemap.xml 생성, robots 해제
+- 확인되지 않은 값은 비워 둡니다. 화면에 **원문 확인 필요**로 표시됩니다.
+- 마감일이 지나면 자동으로 "마감"이 되고 목록 뒤로 갑니다. 페이지는 지우지 않습니다.
+- 같은 정책이 다시 열리면 같은 slug 의 내용을 갱신합니다(주소 유지).
+- 해설이 `승인`이 아니거나 원문 링크가 없는 공고는 noindex 이며 사이트맵에서 빠집니다.
+- 광고는 승인 후 `config.json` 의 `adsense.enabled` 를 켜야 들어가며, 위치는 상세(관련 공고 아래)·목록(페이지 번호 아래)·가이드(중간·끝)뿐입니다. 홈·진단·필수 페이지에는 없습니다.
+
+## 대표가 결정·준비할 것 (요구사항 10장)
+
+- [ ] 온통청년 회원가입 후 오픈 API 인증키 신청 → 저장소 Secrets `YOUTHCENTER_API_KEY`
+- [ ] 온통청년 상업적 이용·출처 표시 조건 확인 → `config.json` 의 `youthcenter.attribution`
+- [ ] 제공목록(응답 필드명) 확인 → `config/youthcenter.json` 의 `endpoint`, `field_map`, `category_map` 채우고 `enabled: true`
+- [ ] 도메인 결정·구입 → `config.json` 의 `site_url`, `cname`
+- [ ] 구글 시트 만들기(열은 `data/sheet/README.md`) → "웹에 게시 → CSV" 주소를 Secrets `SHEET_NOTICES_CSV_URL`, `SHEET_COMMENTARY_CSV_URL`
+- [ ] 문의 이메일, 사업자 정보 표기 범위 → `config.json` 의 `operator`
+- [ ] 개인정보처리방침·이용약관의 `[확정 필요]` 채우고 법무 검토 → `src/content/pages/privacy.html`, `terms.html`
+- [ ] 호스팅 선택(GitHub Pages 또는 Netlify) → `docs/7_빌드와-배포.md`
+- [ ] 저장소 비공개 전환(GitHub Pages 는 유료 플랜 필요)
+- [ ] 애드센스 신청 시 `config.json` 의 `adsense.client`, `ads_txt`; 승인 후 `enabled: true` 와 광고 단위 ID

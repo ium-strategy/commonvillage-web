@@ -1,0 +1,41 @@
+{
+  "_설명": "온통청년 오픈 API 연동 설정. 인증키는 여기에 넣지 않고 저장소 비밀값 YOUTHCENTER_API_KEY 로 보관합니다. 필드명은 인증키 발급 후 제공목록(응답 명세)을 확인하고 채웁니다. field_map 이 비어 있으면 빌드에서 온통청년 데이터를 건너뜁니다.",
+
+  "enabled": false,
+
+  "endpoint": "",
+  "_endpoint_설명": "API 호출 주소. 제공목록에서 확인한 뒤 입력.",
+
+  "api_key_param": "",
+  "_api_key_param_설명": "인증키를 넣는 쿼리 파라미터 이름(명세 확인 후 입력).",
+
+  "params": {},
+  "_params_설명": "인증키 외에 고정으로 보낼 파라미터(페이지 크기 등). 명세 확인 후 입력.",
+
+  "page_param": "",
+  "page_size_param": "",
+  "page_size": 100,
+  "_페이징_설명": "페이지 파라미터 이름이 비어 있으면 한 번만 호출합니다.",
+
+  "items_path": "",
+  "_items_path_설명": "응답 JSON에서 정책 목록 배열까지의 경로. 점(.)으로 구분(예: result.youthPolicyList).",
+
+  "field_map": {
+    "id": "",
+    "title": "",
+    "field": "",
+    "region": "",
+    "target": "",
+    "start": "",
+    "deadline": "",
+    "benefit": "",
+    "self_pay": "",
+    "how": "",
+    "source_url": "",
+    "host": ""
+  },
+  "_field_map_설명": "왼쪽은 커먼빌리지 항목, 오른쪽은 온통청년 응답 필드명. 확인 전에는 비워 둡니다.",
+
+  "category_map": {},
+  "_category_map_설명": "온통청년 정책 분야 값 → housing/support/play/challenge. 대표가 매핑표를 확정한 뒤 입력. 매핑에 없는 분야는 건너뛰고 로그에 남깁니다."
+}

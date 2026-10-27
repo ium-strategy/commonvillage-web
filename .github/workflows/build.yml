@@ -1,0 +1,80 @@
+# 커먼빌리지 자동 빌드·배포
+# - main 에 푸시할 때, 매일 05:00(한국시간)에, 또는 수동 실행으로 돌아갑니다.
+# - 시트·온통청년 데이터를 받아(비밀값이 있을 때만) 정적 HTML을 만들고 GitHub Pages 에 올립니다.
+# - 저장소 Settings → Pages → Source 를 "GitHub Actions" 로 바꿔야 합니다.
+# - 비밀값(Settings → Secrets and variables → Actions):
+#     YOUTHCENTER_API_KEY, SHEET_NOTICES_CSV_URL, SHEET_COMMENTARY_CSV_URL
+#   변수(Variables, 선택): SITE_URL(예: https://commonvillage.kr), BASE_PATH(자체 도메인이면 빈 값)
+name: build-and-deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 20 * * *"   # 매일 20:00 UTC = 05:00 KST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 운영자 시트 받기
+        env:
+          SHEET_NOTICES_CSV_URL: ${{ secrets.SHEET_NOTICES_CSV_URL }}
+          SHEET_COMMENTARY_CSV_URL: ${{ secrets.SHEET_COMMENTARY_CSV_URL }}
+        run: python scripts/fetch_sheet.py
+
+      - name: 온통청년 API 받기
+        env:
+          YOUTHCENTER_API_KEY: ${{ secrets.YOUTHCENTER_API_KEY }}
+        run: python scripts/fetch_youthcenter.py
+
+      - name: 받아온 데이터 저장소에 기록
+        run: |
+          git config user.name "commonvillage-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/sheet data/raw
+          if git diff --cached --quiet; then
+            echo "데이터 변경 없음"
+          else
+            git commit -m "데이터 자동 갱신 $(TZ=Asia/Seoul date +%Y-%m-%d)"
+            git push origin HEAD:main
+          fi
+
+      - name: 사이트 생성
+        run: |
+          ARGS=""
+          if [ -n "${{ vars.SITE_URL }}" ]; then ARGS="$ARGS --site-url ${{ vars.SITE_URL }}"; fi
+          if [ -n "${{ vars.BASE_PATH }}" ] || [ -n "${{ vars.SITE_URL }}" ]; then ARGS="$ARGS --base-path ${{ vars.BASE_PATH }}"; fi
+          python build.py $ARGS
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,57 @@
+{
+  "_설명": "사이트 전체 설정. 대표 결정 사항은 [확정 필요] 표시를 지우고 값을 채우세요. 비밀값(API 키 등)은 여기에 넣지 않습니다.",
+
+  "site_name": "커먼빌리지",
+  "site_tagline": "컴빌에 놀러 와!",
+  "site_url": "https://ium-strategy.github.io/commonvillage-web",
+  "_site_url_설명": "자체 도메인을 연결하면 https://도메인 형태로 바꾸고, 아래 cname에 도메인을 적으세요. 주소 끝에 / 를 붙이지 않습니다.",
+  "cname": "",
+  "_cname_설명": "GitHub Pages에 자체 도메인을 연결할 때만 채웁니다(예: commonvillage.kr). 비워 두면 CNAME 파일을 만들지 않습니다.",
+
+  "default_description": "살 곳부터 새로운 도전까지. 청년주택·지역살이, 지원금·교육, 전시·체험, 공모전·서포터즈 공고를 모아 조건을 쉽게 정리해 드립니다.",
+  "language": "ko",
+
+  "operator": {
+    "name": "이음전략소",
+    "name_en": "IUM STRATEGY LAB",
+    "email": "[확정 필요: 문의 이메일]",
+    "website": "https://www.iumist.com/",
+    "business_info": "",
+    "_business_info_설명": "사업자 정보 표기 범위는 대표 확인 후 결정(요구사항 7장). 비워 두면 표시하지 않습니다."
+  },
+
+  "per_page": 30,
+  "home_card_count": 8,
+  "urgent_days": 7,
+
+  "categories": {
+    "housing":   { "name": "살 곳",       "sub": "청년주택 · 지역살이",     "en": "LIVE YOUR WAY",        "icon": "🏠",
+                   "description": "청년주택 입주자 모집, 지역살이·한 달 살기·워케이션 지원 공고를 모았습니다. 무주택·연령·거주지 같은 자격 조건과 보증금·임대료·본인 부담 비용을 먼저 확인할 수 있도록 정리합니다. 신청 자격과 일정은 주관기관 공고가 기준입니다." },
+    "support":   { "name": "지원받을 곳", "sub": "지원금 · 교육 · 일경험",  "en": "YOUR FIRST CHANCE",    "icon": "📚",
+                   "description": "청년 지원금, 무료 교육, 일경험·인턴십 프로그램처럼 돈과 경험을 지원하는 공고입니다. 미취업 여부, 소득 기준, 다른 사업과의 중복 참여 가능 여부처럼 놓치기 쉬운 조건을 함께 정리합니다." },
+    "play":      { "name": "즐길 곳",     "sub": "전시 · 축제 · 클래스",    "en": "WEEKEND LITTLE JOYS",  "icon": "🖼️",
+                   "description": "전시, 축제, 체험 클래스처럼 주말과 일상을 채우는 문화·체험 프로그램입니다. 운영 기간, 예약 방식, 참가비와 재료비 같은 실제 비용을 확인할 수 있도록 정리합니다." },
+    "challenge": { "name": "도전할 곳",   "sub": "공모전 · 서포터즈",       "en": "MAKE YOUR NEXT MOVE",  "icon": "💡",
+                   "description": "공모전, 서포터즈, 기자단처럼 직접 참여하고 결과를 만드는 모집 공고입니다. 개인·팀 구분, 제출 형식, 수상작 이용 조건, 필수 활동 횟수를 신청 전에 확인할 수 있도록 정리합니다." }
+  },
+
+  "analytics": {
+    "ga4_id": "",
+    "_설명": "구글 애널리틱스4 측정 ID(G-XXXX). 비워 두면 스크립트를 넣지 않습니다. 이벤트 이름(diagnosis_start, apply_click 등)은 유지합니다."
+  },
+
+  "adsense": {
+    "client": "",
+    "_client_설명": "애드센스 게시자 ID(ca-pub-숫자). 채우면 모든 페이지 <head>에 사이트 확인 코드가 들어갑니다(신청 단계).",
+    "enabled": false,
+    "_enabled_설명": "승인 후 true로 바꾸고 아래 광고 단위 ID를 채우면 8장 규칙 위치에만 광고가 들어갑니다. 자동 광고는 쓰지 않습니다.",
+    "slots": { "notice": "", "list": "", "guide_mid": "", "guide_end": "" },
+    "ads_txt": "",
+    "_ads_txt_설명": "애드센스 계정이 알려주는 한 줄(google.com, pub-..., DIRECT, f08c47fec0942fa0). 채우면 /ads.txt 파일을 만듭니다."
+  },
+
+  "youthcenter": {
+    "attribution": "출처: 온통청년(youthcenter.go.kr)",
+    "_설명": "출처 표시 문구. 온통청년 이용약관의 출처 표시 조건을 확인한 뒤 확정하세요."
+  }
+}
