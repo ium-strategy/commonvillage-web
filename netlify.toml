@@ -1,0 +1,22 @@
+# Netlify 를 쓸 경우의 설정(GitHub Pages 대신 선택할 때만 사용).
+# 사이트 설정에서 환경 변수 SHEET_NOTICES_CSV_URL, SHEET_COMMENTARY_CSV_URL, YOUTHCENTER_API_KEY 를 넣고,
+# 매일 빌드는 Build hooks 주소를 외부 스케줄러(예: GitHub Actions 의 curl)로 호출합니다.
+[build]
+  command = "python3 scripts/fetch_sheet.py && python3 scripts/fetch_youthcenter.py && python3 build.py --site-url $URL --base-path ''"
+  publish = "dist"
+
+[build.environment]
+  PYTHON_VERSION = "3.12"
+
+# www/비www 통일(도메인 확정 후 주석 해제, 둘 중 하나만)
+# [[redirects]]
+#   from = "https://www.commonvillage.kr/*"
+#   to = "https://commonvillage.kr/:splat"
+#   status = 301
+#   force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

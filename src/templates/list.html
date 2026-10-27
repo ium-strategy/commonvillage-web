@@ -1,0 +1,9 @@
+<div class="wrap list-page">{{{ crumbs }}}<div class="list-head"><div class="overline">{{ overline }}</div><h1>{{ heading }}</h1><p class="list-desc">{{ description }}</p><p class="list-count">{{ count_text }}</p></div>
+{% if sub_links %}<nav class="sub-links" aria-label="{{ sub_links_label }}">{{{ sub_links }}}</nav>{% endif %}
+{{{ filters }}}
+<div class="cards" id="cards">{{{ cards }}}</div>
+{% if empty_text %}<p class="empty"><strong>{{ empty_text }}</strong><br>새 공고가 올라오면 이 자리에 먼저 보여드릴게요.</p>{% endif %}
+<p class="empty" id="filterEmpty" hidden><strong>조건에 맞는 공고가 없어요.</strong><br>다른 조건으로 다시 찾아보세요.</p>
+{{{ pagination }}}
+{{{ ad }}}
+</div>
